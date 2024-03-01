@@ -42,7 +42,7 @@ contract MessagingContract {
     //Functions
     //User Managing Functions
     function isUser(address publicKey) internal view returns(bool) {
-        if (registeredUsers[publicKey].name != "")  {
+        if (keccak256(bytes(registeredUsers[publicKey].username)) == keccak256(bytes('')))  {
             return true;
         }
         else {
@@ -51,8 +51,8 @@ contract MessagingContract {
     }
 
     //Checks if a given name is just empty string.
-    function emptyName(string username) internal view returns(bool) {
-        if(username == "") {
+    function emptyName(string calldata username) internal pure returns(bool) {
+        if (keccak256(bytes(username)) == keccak256(bytes('')))  {
             return true;
         }
         else {
@@ -61,13 +61,13 @@ contract MessagingContract {
     }
 
     //Creates a new entry in registeredUsers based on the user's public key and assigns a name.
-    function createUser(string username) public returns(bool) {
+    function createUser(string calldata username) public {
         bool isUserBool = isUser(msg.sender);
         bool isEmptyBool = emptyName(username);
         require(isUserBool == false, "This user already has an account.");
         require(isEmptyBool == false, "You need to input a name.");
 
-        registeredUsers[msg.sender].name = username;
+        registeredUsers[msg.sender].username = username;
         registeredUsers[msg.sender].publicKey = msg.sender;
     }
 
@@ -83,26 +83,26 @@ contract MessagingContract {
     }
 
     //Adds the given address as a contact under the name {USERNAME}.
-    function addContact(address publicKey, string username) public {
+    function addContact(address publicKey, string calldata username) public {
         bool isContactBool = isContact(publicKey);
         require(isContactBool == false, "This user is already in your contacts.");
 
-        contact newContact = contact(username, publicKey);
+        contact memory newContact = contact(username, publicKey);
         registeredUsers[msg.sender].contacts.push(newContact);
     }
 
     //Removes the given contact from the user's contacts.
     function removeContact(address contactPublicKey) public {
-        bool isContactBool = isContact(publicKey);
+        bool isContactBool = isContact(contactPublicKey);
         require(isContactBool == true, "This user is not in your contacts.");
         
-        user currentUser = registeredUsers[msg.sender];
+        user memory currentUser = registeredUsers[msg.sender];
 
         for (uint i = 0; i < registeredUsers[msg.sender].contacts.length; i++) {
-            contact currentContact = currentUser.contacts[i];
+            contact memory currentContact = currentUser.contacts[i];
             if (currentContact.publicKey == contactPublicKey) {
                 registeredUsers[msg.sender].contacts[i] = currentUser.contacts[currentUser.contacts.length - 1];
-                registeredUsers[msg.sender].contacts.pop()
+                registeredUsers[msg.sender].contacts.pop();
                 return;
             }
         }
@@ -110,13 +110,13 @@ contract MessagingContract {
 
     //Messaging Managing Functions
     //Creates unique hash based on the conversation participants and a 3rd random variable to identify which messages are which.
-    function createHashCode(address publicKey) internal pure returns bytes32 {
-        bytes32 hash = keccak256(abi.encodePacked(msg.sender, publicKey, nonce))
+    function createHashCode(address publicKey) internal view returns (bytes32) {
+        bytes32 hash = keccak256(abi.encodePacked(msg.sender, publicKey, nonce));
         return hash;
     }
 
     //Creates a new message structure with the needed info and then send it to the given address.
-    function sendMessage(address publicKey, string content) external {
+    function sendMessage(address publicKey, string calldata content) external {
         bool userExistsBool = isUser(msg.sender);
         bool contactExistsBool = isUser(publicKey);
         bool isContactBool = isContact(publicKey);
@@ -125,13 +125,13 @@ contract MessagingContract {
         require(isContactBool == true, "This user is not one of your contacts.");
 
         bytes32 uniqueHash = createHashCode(publicKey);
-        message newMessage = message(msg.sender, block.timestamp, content);
+        message memory newMessage = message(msg.sender, block.timestamp, content);
 
         allMessages[uniqueHash].push(newMessage);
     }
 
     //Reads the message history between the user and the given address, and returns it.
-    function recieveMessage(address publicKey) external view {
+    function recieveMessage(address publicKey) external view returns (message[] memory) {
         bytes32 uniqueHash = createHashCode(publicKey);
         return allMessages[uniqueHash];
     }
