@@ -1,9 +1,10 @@
 import React from "react";
-import { SideNav } from './react-components/react-components.jsx';
+import { SideNav, TopNav } from './react-components/react-components.jsx';
 
 function App() {
     return (
         <div>
+            <TopNav />
             <SideNav />
         </div>
     );

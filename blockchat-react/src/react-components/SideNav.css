@@ -1,4 +1,9 @@
 .sidenav {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    align-items: center;
+
     height: 100%;
     width: 75px;
     position: fixed;
@@ -7,28 +12,19 @@
     background-color: #444444;
     overflow-x: hidden;
     padding-top: 20px;
-    padding-bottom: 20px;
+    padding-bottom: 50px;
+  }
+
+  .bottom {
     display: flex;
     flex-direction: column-reverse;
+    justify-content: space-between;
+    align-items: center;
   }
-  
-  .sidebar ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .sidebar ul li {
-    padding: 10px;
+  button {
+    background-color: transparent;
     color: white;
+    border: none;
+    cursor: pointer;
+    padding-bottom: 40px;
   }
-  
-  .sidebar ul li a {
-    text-decoration: none;
-    color: white;
-  }
-  
-  .sidebar ul li a:hover {
-    color: #f1f1f1;
-  }
-  
