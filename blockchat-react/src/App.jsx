@@ -1,11 +1,21 @@
 import React from "react";
-import { SideNav, TopNav } from './react-components/react-components.jsx';
+import { SideNav, TopNav, MessageCard } from './react-components/react-components.jsx';
+
+const CONTRACT_ADDRESS = ""
 
 function App() {
+
+
+
     return (
-        <div>
-            <TopNav />
-            <SideNav />
+        <div className="app">
+            <div className="navs">
+                <TopNav />
+                <SideNav />
+            </div>
+            <div className="contacts">
+
+            </div>
         </div>
     );
 }
