@@ -4,14 +4,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog } from '@fortawesome/free-solid-svg-icons';
 import { GreyMetaMaskIcon } from "./CustomIcons"
 
-function SideNav() {
+function SideNav(properties) {
     return (
         <div className="sidenav">
             <div className="bottom">
                 <button>
                     <FontAwesomeIcon icon={faCog} size="2x" />
                 </button>
-                <button>
+                <button onClick={() => properties.blockchatLogin()}>
                     <GreyMetaMaskIcon />
                 </button>
             </div>
