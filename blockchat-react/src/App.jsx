@@ -3,11 +3,12 @@ import { SideNav, TopNav, ContactCardContainer } from "./react-components/react-
 import { abi } from "./abi";
 import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
+import './App.css';
 
 function App() {
 
     //Data Structures
-    const CONTRACT_ADDRESS = "0x144cF39ac88B6576Ae217418bE36E35753C4c429"
+    const CONTRACT_ADDRESS = "0xf7CD4D24D3d6d0fC2b8636e8e19ac761D58AA1fC"
     let activeChats = [];
     //=====================================================================================================
     //Hooks
@@ -24,30 +25,16 @@ function App() {
     async function connectToWallet() {
         //Opens a window to sign-in to MetaMask. This is a promise that will either succeed, and follow the
         //then branch, or fail, and follow the catch branch. 
-        window.ethereum
-        .request({ method: 'eth_requestAccounts' })
-        .then(function (accounts) {
-            const walletAddress = accounts[0];
-            setWalletAddress(walletAddress);
-            console.log("Connected to user account.");
-            console.log(walletAddress);
-            return true;
-        })
-        .catch(function (error) {
-            console.error("Not connected to user account. Error: " + error);
-            return false;
-        });
-    }
-
-    function connectToContract() {
         try {
-            const provider = new Web3Provider( window.ethereum );
-            const signer = provider.getSigner();
-            let contract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
-            setContract(contract);
-            return true;
-        } catch (error) {
-            console.error("Not connected to contract. Error: " + error);
+
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            let walletAddress = accounts[0];
+
+            setWalletAddress(walletAddress);
+            return walletAddress;
+
+        } catch(error) {
+
             return false;
         }
     }
@@ -55,50 +42,70 @@ function App() {
     //If the user has connected their MetaMask wallet, tries to login to the associated BlockChat account. If one does
     //not exist, the user is prompted to create one.
     async function blockchatLogin() {
-        const isWalletConnected = connectToWallet();
-        if (isWalletConnected) {
-            const isContractConnected = connectToContract();
-            if (isContractConnected) {
-                let username;
-                const isUser = await contract.isUser(walletAddress);
-                if (isUser) {
-                    username = await contract.getUser(walletAddress);
-                } else {
-                    username = prompt("You do not have an account. Please enter a username to create one.");
-                    if (username === "") {
-                        username = "newUser";
-                    }
-                    await contract.createUser(username);
-                }
-                console.log(username);
-                setUsername(username);
+
+        let walletAddress = await connectToWallet();
+
+        //In JS, variables that have value are considered Truthy so this is entered if an address is found.
+        if (walletAddress) {
+
+            const provider = new Web3Provider( window.ethereum );
+            const signer = provider.getSigner();
+            const tmpContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+            setContract(tmpContract);
+
+            let username;
+            const isUser = await tmpContract.isUser(walletAddress);
+
+            if (isUser) {
+                username = await tmpContract.getUser(walletAddress);
+
             } else {
-                alert("Contract is not connected.");
-                return false;
+
+                username = prompt("You do not have an account. Please enter a username to create one.");
+
+                if (username === "") {
+                    username = "newUser";
+                }
+
+                await tmpContract.createUser(username);
             }
+
+            setUsername(username);
+
         } else {
-            alert("No wallet is connected.");
-            return false;
+
+            alert("Failed to login.");
+
         }
         
-        return true;
     }
 
-    async function getContacts() {
-        let contacts = [];
-        try {
-            const wrappedContacts = await contract.getContacts
-            wrappedContacts.forEach( ( item ) => {
-                contacts.push({ "username": item[0], "walletAddress": item[1] });
-            })
-        } catch (error) {
-            contacts = [];
+    useEffect(() => {
+
+        async function getContacts() {
+
+            let tmpContacts = [];
+
+            try {
+
+                const wrappedContacts = await contract.getContacts()
+
+                wrappedContacts.forEach( ( item ) => {
+                    tmpContacts.push({ "username": item[0], "walletAddress": item[1] });
+                })
+
+            } catch (error) {
+
+                tmpContacts = [];
+
+            }
+
+            setContacts(tmpContacts);
         }
-        setContacts(contacts);
-        return contacts;
-    }
 
-    useEffect(getContacts, [walletAddress, contract]);
+        getContacts();
+
+    }, [walletAddress, contract]);
 
     return (
         <div className="app">
@@ -106,11 +113,13 @@ function App() {
                 <TopNav />
                 <SideNav blockchatLogin={blockchatLogin}/>
             </div>
-            <ContactCardContainer
-                contacts={getContacts}
-                activeChat={activeChat}
-                //selectChat={selectChat}
-            />
+            <div className ="content">
+                <ContactCardContainer
+                    contacts={contacts}
+                    activeChat={activeChat}
+                    //selectChat={selectChat}
+                />
+            </div>
         </div>
     );
 }

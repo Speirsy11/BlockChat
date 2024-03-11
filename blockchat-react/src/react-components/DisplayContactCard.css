@@ -1,6 +1,10 @@
 .contact-card {
     padding: 10px;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
   }
   
   .contact-card:hover {
@@ -10,5 +14,10 @@
   .selected {
     background-color: #e2e2e2;
     font-weight: bold;
+  }
+
+  .address {
+    display: flex;
+    flex-direction: column;
   }
   
