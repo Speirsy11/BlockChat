@@ -156,7 +156,7 @@ contract MessagingContract {
     }
 
     //Reads the message history between the user and the given address, and returns it.
-    function recieveMessage(address walletAddress) external view returns (message[] memory) {
+    function receiveMessage(address walletAddress) external view returns (message[] memory) {
         bytes32 uniqueHash = createHashCode(walletAddress);
         return allMessages[uniqueHash];
     }

@@ -1,10 +1,9 @@
 .topnav {
     display: flex;
+    flex: 1;
+    flex-shrink: 0;
     justify-content: space-between;
-    align-items: center;
     padding: 10px;
-    padding-left: 65px;
-    padding-right: 25px;
     background-color: #444444;
     color: white;
     height: 50px;
@@ -13,6 +12,7 @@
   .left {
     display: flex;
     align-items: center;
+    padding-left: 50px;
   }
   
   .right {

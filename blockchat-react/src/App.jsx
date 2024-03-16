@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SideNav, TopNav, ContactCardContainer } from "./react-components/react-components.jsx";
+import { SideNav, TopNav, ContactCardContainer, MessageContainer } from "./react-components/react-components.jsx";
 import { abi } from "./abi";
 import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
@@ -8,7 +8,7 @@ import './App.css';
 function App() {
 
     //Data Structures
-    const CONTRACT_ADDRESS = "0xf7CD4D24D3d6d0fC2b8636e8e19ac761D58AA1fC"
+    const CONTRACT_ADDRESS = "0x144cF39ac88B6576Ae217418bE36E35753C4c429"
     let activeChats = [];
     //=====================================================================================================
     //Hooks
@@ -17,7 +17,7 @@ function App() {
     const [contacts, setContacts] = useState(null);
     const [walletAddress, setWalletAddress] = useState(null);
     const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null });
-
+    const [currentMessages, setCurrentMessages] = useState(null);
     //=====================================================================================================
     //Functions
     //Connecting to user's MetaMask wallet to identify them.
@@ -80,9 +80,14 @@ function App() {
         
     }
 
+    function selectChat(username, walletAddress) {
+        console.log(username, walletAddress);
+        setActiveChat({username, walletAddress});
+    }
+
     useEffect(() => {
 
-        async function getContacts() {
+        async function loadContacts() {
 
             let tmpContacts = [];
 
@@ -95,29 +100,57 @@ function App() {
                 })
 
             } catch (error) {
-
-                tmpContacts = [];
-
+                tmpContacts = null;
             }
 
             setContacts(tmpContacts);
         }
 
-        getContacts();
+        loadContacts();
 
     }, [walletAddress, contract]);
 
+    useEffect(() => {
+
+        console.log("active chat changed.")
+
+        async function loadMessages() {
+
+            let tmpMessages = [];
+
+            try {
+
+                const wrappedMessages = await contract.receiveMessage(activeChat.walletAddress);
+                wrappedMessages.forEach( ( message ) => {
+                    tmpMessages.push({ "username": message[0], "timestamp": message[1], "content": message[2] });
+                })
+
+            } catch (error) {
+                console.log("errored:", error);
+                tmpMessages = null;
+            }
+
+            setCurrentMessages(tmpMessages);
+
+        }
+        loadMessages();
+
+    }, [activeChat]);
+
     return (
         <div className="app">
-            <div className="navs">
                 <TopNav />
-                <SideNav blockchatLogin={blockchatLogin}/>
-            </div>
             <div className ="content">
+                <SideNav blockchatLogin={blockchatLogin}/>
                 <ContactCardContainer
                     contacts={contacts}
+                    //Needs doing
                     activeChat={activeChat}
-                    //selectChat={selectChat}
+                    selectChat={selectChat}
+                />
+                <MessageContainer 
+                    messages = {currentMessages}
+                    username = {activeChat.username}
                 />
             </div>
         </div>
