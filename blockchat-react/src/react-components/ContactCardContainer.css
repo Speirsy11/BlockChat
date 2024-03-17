@@ -1,5 +1,4 @@
 .contact-container {
-    display: flex;
     flex-direction: column;
     flex: 1;
     overflow-y: auto;
@@ -10,6 +9,29 @@
     height: 100vh;
 }
 
+  .header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .button-container {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+  
+  .button-container button {
+    color: white;
+    border: none;
+    padding: 10px;
+    padding-right: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
   .contact-list {
+    padding-top: 20px;
     width: 100%;
   }

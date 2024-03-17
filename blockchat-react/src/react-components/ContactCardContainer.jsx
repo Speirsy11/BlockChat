@@ -1,14 +1,26 @@
 import React from 'react';
 import DisplayContactCard from './DisplayContactCard';
 import "./ContactCardContainer.css"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 function ContactCardContainer (properties) {
 
     return (
         <div className="contact-container">
-            <h2>
-                Contacts
-            </h2>
+            <div className="header">
+                <h2>Contacts</h2>
+                <div className="button-container">
+                    <button onClick={properties.addContact}>
+                        <FontAwesomeIcon
+                            icon={faPlus}
+                            style={{color: "#444444"}}
+                            //Add popup to input username plus address.
+                            onClick={properties.addContact()}
+                        />
+                    </button>
+                </div>
+            </div>
             <div className="contact-list"> {
                 properties.contacts ? (
                 properties.contacts.map((contact, index) => (

@@ -3,11 +3,14 @@
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 10px;
-    width: 30%
   }
   
-  .contact-name {
-    font-weight: bold;
+  .header-info {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 5px;
   }
   
+  .message {
+    word-wrap: break-word;
+  }

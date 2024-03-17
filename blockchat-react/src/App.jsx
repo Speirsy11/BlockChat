@@ -8,7 +8,7 @@ import './App.css';
 function App() {
 
     //Data Structures
-    const CONTRACT_ADDRESS = "0x144cF39ac88B6576Ae217418bE36E35753C4c429"
+    const CONTRACT_ADDRESS = "0x2743383DCEAA71C324fcB7375a037a56E7EDEB44"
     let activeChats = [];
     //=====================================================================================================
     //Hooks
@@ -85,6 +85,22 @@ function App() {
         setActiveChat({username, walletAddress});
     }
 
+    async function sendMessage(walletAddress, message) {
+        try {
+            await contract.sendMessage(walletAddress, message);
+        } catch (error) {
+            console.log(walletAddress, message);
+        }
+    }
+
+    async function addContact(walletAddress, nickname) {
+        try {
+            await contract.addContact(walletAddress, nickname)
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
 
         async function loadContacts() {
@@ -122,7 +138,7 @@ function App() {
 
                 const wrappedMessages = await contract.receiveMessage(activeChat.walletAddress);
                 wrappedMessages.forEach( ( message ) => {
-                    tmpMessages.push({ "username": message[0], "timestamp": message[1], "content": message[2] });
+                    tmpMessages.push({ "walletAddress": message[0], "timestamp": message[1], "content": message[2] });
                 })
 
             } catch (error) {
@@ -139,18 +155,26 @@ function App() {
 
     return (
         <div className="app">
-                <TopNav />
+                <TopNav 
+                    
+                />
             <div className ="content">
-                <SideNav blockchatLogin={blockchatLogin}/>
+                <SideNav
+                    blockchatLogin={blockchatLogin}
+                />
                 <ContactCardContainer
                     contacts={contacts}
                     //Needs doing
                     activeChat={activeChat}
                     selectChat={selectChat}
+                    addContact = {addContact}
                 />
                 <MessageContainer 
                     messages = {currentMessages}
                     username = {activeChat.username}
+                    myAddress = {walletAddress}
+                    contactAddress = {activeChat.walletAddress}
+                    sendMessage = {sendMessage}
                 />
             </div>
         </div>

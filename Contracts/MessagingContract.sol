@@ -134,11 +134,6 @@ contract MessagingContract {
     }
 
     //Messaging Managing Functions
-    //Creates unique hash based on the conversation participants and a 3rd random variable to identify which messages are which.
-    function createHashCode(address walletAddress) internal view returns (bytes32) {
-        bytes32 hash = keccak256(abi.encodePacked(msg.sender, walletAddress, nonce));
-        return hash;
-    }
 
     //Creates a new message structure with the needed info and then send it to the given address.
     function sendMessage(address walletAddress, string calldata content) external {
@@ -159,5 +154,12 @@ contract MessagingContract {
     function receiveMessage(address walletAddress) external view returns (message[] memory) {
         bytes32 uniqueHash = createHashCode(walletAddress);
         return allMessages[uniqueHash];
+    }
+
+    //Creates unique hash based on the conversation participants and a 3rd random variable to identify which messages are which.
+    function createHashCode(address walletAddress) internal view returns (bytes32) {
+        bytes32 hash1 = keccak256(abi.encodePacked(msg.sender, walletAddress, nonce));
+        bytes32 hash2 = keccak256(abi.encodePacked(walletAddress, msg.sender, nonce));
+        return (hash1 < hash2 ? hash1 : hash2);
     }
 }
