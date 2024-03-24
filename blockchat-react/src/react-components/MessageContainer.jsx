@@ -72,10 +72,8 @@ function MessageContainer (properties) {
 }
 
 function amISender(message, properties) {
-    console.log("my:", properties.myAddress, "msg:", message.walletAddress);
     message.walletAddress = message.walletAddress.toLowerCase();
     if (message.walletAddress === properties.myAddress) {
-        console.log("true");
         return true;
     } else {
         return false;

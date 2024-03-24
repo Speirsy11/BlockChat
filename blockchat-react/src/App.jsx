@@ -3,13 +3,13 @@ import { SideNav, TopNav, ContactCardContainer, MessageContainer } from "./react
 import { abi } from "./abi";
 import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
+import Web3 from "web3";
 import './App.css';
 
 function App() {
 
     //Data Structures
-    const CONTRACT_ADDRESS = "0x2743383DCEAA71C324fcB7375a037a56E7EDEB44"
-    let activeChats = [];
+    const CONTRACT_ADDRESS = "0x386e29f4EB2961ea7C664Ac8Fe2529a87769741F"
     //=====================================================================================================
     //Hooks
     const [contract, setContract] = useState(null);
@@ -20,6 +20,11 @@ function App() {
     const [currentMessages, setCurrentMessages] = useState(null);
     //=====================================================================================================
     //Functions
+
+    window.ethereum.on("accountsChanged", async () => {
+        setWalletAddress()
+    })
+
     //Connecting to user's MetaMask wallet to identify them.
     //Returns TRUE if successful, FALSE if not.
     async function connectToWallet() {
@@ -71,6 +76,7 @@ function App() {
             }
 
             setUsername(username);
+            alert("Connected to BlockChat account.");
 
         } else {
 
@@ -97,9 +103,54 @@ function App() {
         try {
             await contract.addContact(walletAddress, nickname)
         } catch (error) {
-            console.log(error);
+            //Do Nothing
         }
     }
+
+    async function handleAccountChanged() {
+        const web3 = new Web3(window.ethereum);
+        const accounts = await web3.eth.getAccounts();
+        if (accounts.length === 0) {
+            setWalletAddress(null);
+        }
+        else {
+            const tmpWalletAddress = accounts[0];
+            setWalletAddress(tmpWalletAddress);
+        }
+    }
+
+    async function loadMessages() {
+
+        let tmpMessages = [];
+
+        try {
+
+            const wrappedMessages = await contract.receiveMessage(activeChat.walletAddress);
+            wrappedMessages.forEach( ( message ) => {
+                tmpMessages.push({ "walletAddress": message[0], "timestamp": message[1], "content": message[2] });
+            })
+
+        } catch (error) {
+            console.log("errored:", error);
+            tmpMessages = null;
+        }
+
+        setCurrentMessages(tmpMessages);
+
+    }
+
+    useEffect(() => {
+        async function initialSetup() {
+            if(window.ethereum) {
+                window.ethereum.on('accountsChanged', handleAccountChanged);
+            }
+            else {
+                alert("MetaMask is not installed.");
+            }
+        }
+
+        initialSetup();
+    }, []);
 
     useEffect(() => {
 
@@ -119,6 +170,14 @@ function App() {
                 tmpContacts = null;
             }
 
+            try {
+                if (tmpContacts.length === 0) {
+                    tmpContacts = null;
+                }
+            } catch {
+                //Do Nothing
+            }
+
             setContacts(tmpContacts);
         }
 
@@ -128,27 +187,6 @@ function App() {
 
     useEffect(() => {
 
-        console.log("active chat changed.")
-
-        async function loadMessages() {
-
-            let tmpMessages = [];
-
-            try {
-
-                const wrappedMessages = await contract.receiveMessage(activeChat.walletAddress);
-                wrappedMessages.forEach( ( message ) => {
-                    tmpMessages.push({ "walletAddress": message[0], "timestamp": message[1], "content": message[2] });
-                })
-
-            } catch (error) {
-                console.log("errored:", error);
-                tmpMessages = null;
-            }
-
-            setCurrentMessages(tmpMessages);
-
-        }
         loadMessages();
 
     }, [activeChat]);
@@ -156,11 +194,12 @@ function App() {
     return (
         <div className="app">
                 <TopNav 
-                    
+                    loadMessages={loadMessages}
                 />
             <div className ="content">
                 <SideNav
                     blockchatLogin={blockchatLogin}
+                    walletAddress={walletAddress}
                 />
                 <ContactCardContainer
                     contacts={contacts}

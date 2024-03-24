@@ -30,3 +30,8 @@
     cursor: pointer;
     padding: 15px;
   }
+  
+  .set-image-size {
+    width: 35px;
+    height: auto;
+  }

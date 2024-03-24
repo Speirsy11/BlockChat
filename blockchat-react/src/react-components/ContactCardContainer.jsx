@@ -16,7 +16,7 @@ function ContactCardContainer (properties) {
                             icon={faPlus}
                             style={{color: "#444444"}}
                             //Add popup to input username plus address.
-                            onClick={properties.addContact()}
+                            onClick={properties.addContact}
                         />
                     </button>
                 </div>
@@ -37,6 +37,10 @@ function ContactCardContainer (properties) {
             </div>
         </div>
     );
+}
+
+function addContact(properties) {
+    
 }
 
 export default ContactCardContainer;
