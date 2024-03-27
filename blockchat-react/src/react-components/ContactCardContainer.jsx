@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import DisplayContactCard from './DisplayContactCard';
 import "./ContactCardContainer.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import AddContactModal from './AddContactModal';
 
 function ContactCardContainer (properties) {
+
+    const[isAddContactOpen, setAddContactOpen] = useState(false);
+
+    function openAddContact() {
+        setAddContactOpen(true);
+        console.log("clicked.")
+    }
+
+    function closeAddContact() {
+        setAddContactOpen(false);
+    }
 
     return (
         <div className="contact-container">
@@ -15,10 +27,14 @@ function ContactCardContainer (properties) {
                         <FontAwesomeIcon
                             icon={faPlus}
                             style={{color: "#444444"}}
-                            //Add popup to input username plus address.
-                            onClick={properties.addContact}
+                            onClick={openAddContact}
                         />
                     </button>
+                    <AddContactModal
+                        isOpen={isAddContactOpen}
+                        onRequestClose={closeAddContact}
+                        addContact={properties.addContact}
+                    />
                 </div>
             </div>
             <div className="contact-list"> {
@@ -37,10 +53,6 @@ function ContactCardContainer (properties) {
             </div>
         </div>
     );
-}
-
-function addContact(properties) {
-    
 }
 
 export default ContactCardContainer;

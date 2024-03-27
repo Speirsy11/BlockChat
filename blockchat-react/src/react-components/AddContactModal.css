@@ -1,0 +1,14 @@
+  .ReactModal__Overlay--after-open {
+    max-width: 600px;
+    max-height: 250px;
+    margin: auto;
+    display: flex;
+  }
+
+  .header {
+    justify-content: center;
+  }
+
+  .content {
+    justify-content: space-between;
+  }

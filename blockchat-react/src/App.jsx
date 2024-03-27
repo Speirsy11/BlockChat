@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SideNav, TopNav, ContactCardContainer, MessageContainer } from "./react-components/react-components.jsx";
+import { SideNav, TopNav, ContactCardContainer, MessageContainer, AddContactModal } from "./react-components/react-components.jsx";
 import { abi } from "./abi";
 import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
@@ -18,12 +18,9 @@ function App() {
     const [walletAddress, setWalletAddress] = useState(null);
     const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null });
     const [currentMessages, setCurrentMessages] = useState(null);
+    const [isAddContactOpen, setAddContactOpen] = useState(false);
     //=====================================================================================================
     //Functions
-
-    window.ethereum.on("accountsChanged", async () => {
-        setWalletAddress()
-    })
 
     //Connecting to user's MetaMask wallet to identify them.
     //Returns TRUE if successful, FALSE if not.
@@ -53,7 +50,7 @@ function App() {
         //In JS, variables that have value are considered Truthy so this is entered if an address is found.
         if (walletAddress) {
 
-            const provider = new Web3Provider( window.ethereum );
+            const provider = new Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             const tmpContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
             setContract(tmpContract);
@@ -104,7 +101,17 @@ function App() {
             await contract.addContact(walletAddress, nickname)
         } catch (error) {
             //Do Nothing
+            console.log(error)
         }
+    }
+
+    function openAddContact() {
+        setAddContactOpen(true);
+        console.log("clicked.")
+    }
+
+    function closeAddContact() {
+        setAddContactOpen(false);
     }
 
     async function handleAccountChanged() {
@@ -139,6 +146,33 @@ function App() {
 
     }
 
+    async function loadContacts() {
+
+        let tmpContacts = [];
+
+        try {
+
+            const wrappedContacts = await contract.getContacts()
+
+            wrappedContacts.forEach( ( item ) => {
+                tmpContacts.push({ "username": item[0], "walletAddress": item[1] });
+            })
+
+        } catch (error) {
+            tmpContacts = null;
+        }
+
+        try {
+            if (tmpContacts.length === 0) {
+                tmpContacts = null;
+            }
+        } catch {
+            //Do Nothing
+        }
+
+        setContacts(tmpContacts);
+    }
+
     useEffect(() => {
         async function initialSetup() {
             if(window.ethereum) {
@@ -154,34 +188,7 @@ function App() {
 
     useEffect(() => {
 
-        async function loadContacts() {
-
-            let tmpContacts = [];
-
-            try {
-
-                const wrappedContacts = await contract.getContacts()
-
-                wrappedContacts.forEach( ( item ) => {
-                    tmpContacts.push({ "username": item[0], "walletAddress": item[1] });
-                })
-
-            } catch (error) {
-                tmpContacts = null;
-            }
-
-            try {
-                if (tmpContacts.length === 0) {
-                    tmpContacts = null;
-                }
-            } catch {
-                //Do Nothing
-            }
-
-            setContacts(tmpContacts);
-        }
-
-        loadContacts();
+    loadContacts();
 
     }, [walletAddress, contract]);
 
@@ -195,7 +202,14 @@ function App() {
         <div className="app">
                 <TopNav 
                     loadMessages={loadMessages}
+                    loadContacts={loadContacts}
                 />
+                <AddContactModal
+                    isOpen={isAddContactOpen}
+                    onRequestClose={closeAddContact}
+                    addContact={() => addContact}
+                    openAddContact={openAddContact}
+                />                
             <div className ="content">
                 <SideNav
                     blockchatLogin={blockchatLogin}
