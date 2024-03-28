@@ -4,6 +4,7 @@ import { abi } from "./abi";
 import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
 import Web3 from "web3";
+import nacl from "tweetnacl";
 import './App.css';
 
 function App() {
@@ -69,7 +70,29 @@ function App() {
                     username = "newUser";
                 }
 
-                await tmpContract.createUser(username);
+                let keys = nacl.box.keyPair();
+                let publicEncKey = keys.publicKey;
+
+                const databasePromise = window.indexedDB.open("Site Storage", 1);
+                databasePromise.onsuccess = function(event) {
+
+                    let database = event.target.result;
+                    let transaction = database.transaction("KeyStorage", "readwrite");
+                    let store = transaction.objectStore("KeyStorage");
+                
+                    let data = {
+                        walletAddress: walletAddress,
+                        privateKey: keys.secretKey
+                    }
+
+                    store.put(data);
+
+                    transaction.oncomplete = function() {
+                        database.close();
+                    };
+                };
+
+                await tmpContract.createUser(username, publicEncKey);
             }
 
             setUsername(username);
@@ -90,7 +113,29 @@ function App() {
 
     async function sendMessage(walletAddress, message) {
         try {
-            await contract.sendMessage(walletAddress, message);
+            const databasePromise = window.indexedDB.open("Site Storage", 1);
+            let secretKey;
+
+            databasePromise.onsuccess = function(event) {
+                let database = event.target.result;
+                let transaction = database.transaction("WalletStore", "readonly");
+                let store = transaction.objectStore("WalletStore");
+            
+                let request = store.get(walletAddress);
+            
+                request.onsuccess = function() {
+                    secretKey = request.result;
+                };
+            
+                request.onerror = function() {
+                    console.log("KeyPair not found.");
+                };
+            };
+
+            let nonce = nacl.randomBytes(nacl.box.nonceLength);
+            let encryptedMessage = nacl.box(message, nonce, walletAddress, secretKey)
+
+            await contract.sendMessage(walletAddress, encryptedMessage, nonce);
         } catch (error) {
             console.log(walletAddress, message);
         }
@@ -174,12 +219,26 @@ function App() {
     }
 
     useEffect(() => {
+
         async function initialSetup() {
             if(window.ethereum) {
                 window.ethereum.on('accountsChanged', handleAccountChanged);
             }
             else {
                 alert("MetaMask is not installed.");
+            }
+
+            if (window.indexedDB) {
+                const databasePromise = window.indexedDB.open("Site Storage", 1);
+
+                databasePromise.onupgradeneeded = function(event) {
+                    let database = event.target.result;
+                    database.createObjectStore("KeyStorage", {keyPath: "walletAddress"});
+                    database.close();
+                };
+            }
+            else {
+                alert("Your browser does not support indexedDB.");
             }
         }
 

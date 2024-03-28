@@ -16,6 +16,7 @@ contract MessagingContract {
     struct user {
         string username;
         address walletAddress;
+        bytes32 publicEncKey;
         contact[] contacts;
     }
 
@@ -23,6 +24,7 @@ contract MessagingContract {
     struct contact {
         string username;
         address walletAddress;
+        bytes32 publicEncKey;
     }
 
     //Stores information relating to an individual message.
@@ -30,6 +32,7 @@ contract MessagingContract {
         address sender;
         uint256 timestamp;
         string content;
+        bytes24 nonce;
     }
     //=====================================================================================================
     //Mappings
@@ -68,7 +71,7 @@ contract MessagingContract {
     }
 
     //Creates a new entry in registeredUsers based on the user's public key and assigns a name.
-    function createUser(string calldata username) public {
+    function createUser(string calldata username, bytes calldata publicEncKey) public {
         bool isUserBool = isUser(msg.sender);
         bool isEmptyBool = emptyName(username);
         require(isUserBool == false, "This user already has an account.");
@@ -76,6 +79,7 @@ contract MessagingContract {
 
         registeredUsers[msg.sender].username = username;
         registeredUsers[msg.sender].walletAddress = msg.sender;
+        registeredUsers[msg.sender].publicEncKey = convertToBytes32(publicEncKey);
     }
 
     function removeUser() public {
@@ -90,6 +94,22 @@ contract MessagingContract {
         // Set the user's data to default values
         currentUser.username = "";
         currentUser.walletAddress = address(0);
+    }
+
+    function convertToBytes32(bytes memory data) internal pure returns(bytes32) {
+        
+        bytes32 converted = abi.decode(data, (bytes32));
+
+        return converted;
+
+    }
+
+        function convertToBytes24(bytes memory data) internal pure returns(bytes24) {
+        
+        bytes24 converted = abi.decode(data, (bytes24));
+
+        return converted;
+
     }
 
     //Contact Managing Functions
@@ -108,12 +128,19 @@ contract MessagingContract {
     }
 
     //Adds the given address as a contact under the name {USERNAME}.
-    function addContact(address walletAddress, string calldata username) public {
+    function addContact(address walletAddress) public returns (bool){
         bool isContactBool = isContact(walletAddress);
         require(isContactBool == false, "This user is already in your contacts.");
 
-        contact memory newContact = contact(username, walletAddress);
-        registeredUsers[msg.sender].contacts.push(newContact);
+        user memory otherUser = registeredUsers[walletAddress];
+
+        if (bytes(otherUser.username).length == 0) {
+            return false;
+        } else {
+            contact memory newContact = contact(otherUser.username, otherUser.walletAddress, otherUser.publicEncKey);
+            registeredUsers[msg.sender].contacts.push(newContact);
+            return true;
+        }
     }
 
     //Removes the given contact from the user's contacts.
@@ -136,7 +163,7 @@ contract MessagingContract {
     //Messaging Managing Functions
 
     //Creates a new message structure with the needed info and then send it to the given address.
-    function sendMessage(address walletAddress, string calldata content) external {
+    function sendMessage(address walletAddress, string calldata content, bytes calldata messageNonce) external {
         bool userExistsBool = isUser(msg.sender);
         bool contactExistsBool = isUser(walletAddress);
         bool isContactBool = isContact(walletAddress);
@@ -145,7 +172,8 @@ contract MessagingContract {
         require(isContactBool == true, "This user is not one of your contacts.");
 
         bytes32 uniqueHash = createHashCode(walletAddress);
-        message memory newMessage = message(msg.sender, block.timestamp, content);
+        bytes24 convertedNonce = convertToBytes24(messageNonce);
+        message memory newMessage = message(msg.sender, block.timestamp, content, convertedNonce);
 
         allMessages[uniqueHash].push(newMessage);
     }
