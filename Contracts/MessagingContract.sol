@@ -31,7 +31,7 @@ contract MessagingContract {
     struct message {
         address sender;
         uint256 timestamp;
-        string content;
+        bytes content;
         bytes24 nonce;
     }
     //=====================================================================================================
@@ -71,7 +71,7 @@ contract MessagingContract {
     }
 
     //Creates a new entry in registeredUsers based on the user's public key and assigns a name.
-    function createUser(string calldata username, bytes calldata publicEncKey) public {
+    function createUser(string calldata username, bytes32 publicEncKey) public {
         bool isUserBool = isUser(msg.sender);
         bool isEmptyBool = emptyName(username);
         require(isUserBool == false, "This user already has an account.");
@@ -79,7 +79,7 @@ contract MessagingContract {
 
         registeredUsers[msg.sender].username = username;
         registeredUsers[msg.sender].walletAddress = msg.sender;
-        registeredUsers[msg.sender].publicEncKey = convertToBytes32(publicEncKey);
+        registeredUsers[msg.sender].publicEncKey = publicEncKey;
     }
 
     function removeUser() public {
@@ -94,14 +94,6 @@ contract MessagingContract {
         // Set the user's data to default values
         currentUser.username = "";
         currentUser.walletAddress = address(0);
-    }
-
-    function convertToBytes32(bytes memory data) internal pure returns(bytes32) {
-        
-        bytes32 converted = abi.decode(data, (bytes32));
-
-        return converted;
-
     }
 
         function convertToBytes24(bytes memory data) internal pure returns(bytes24) {
@@ -163,7 +155,7 @@ contract MessagingContract {
     //Messaging Managing Functions
 
     //Creates a new message structure with the needed info and then send it to the given address.
-    function sendMessage(address walletAddress, string calldata content, bytes calldata messageNonce) external {
+    function sendMessage(address walletAddress, bytes calldata content, bytes24 messageNonce) external {
         bool userExistsBool = isUser(msg.sender);
         bool contactExistsBool = isUser(walletAddress);
         bool isContactBool = isContact(walletAddress);
@@ -172,8 +164,7 @@ contract MessagingContract {
         require(isContactBool == true, "This user is not one of your contacts.");
 
         bytes32 uniqueHash = createHashCode(walletAddress);
-        bytes24 convertedNonce = convertToBytes24(messageNonce);
-        message memory newMessage = message(msg.sender, block.timestamp, content, convertedNonce);
+        message memory newMessage = message(msg.sender, block.timestamp, content, messageNonce);
 
         allMessages[uniqueHash].push(newMessage);
     }

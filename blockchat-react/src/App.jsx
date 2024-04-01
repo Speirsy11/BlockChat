@@ -6,21 +6,23 @@ import { Web3Provider } from '@ethersproject/providers';
 import Web3 from "web3";
 import nacl from "tweetnacl";
 import naclUtil from 'tweetnacl-util';
+import { Buffer } from "buffer";
 import './App.css';
 
 function App() {
 
     //Data Structures
-    const CONTRACT_ADDRESS = "0x634D630BcBA58173184f9B54f7B2b1EE22604abD"
+    const CONTRACT_ADDRESS = "0x2227Fe9e9ae7E481CB57B2fD51c857498486E4E3"
     //=====================================================================================================
     //Hooks
     const [contract, setContract] = useState(null);
     const [username, setUsername] = useState(null);
     const [contacts, setContacts] = useState(null);
     const [myWalletAddress, setMyWalletAddress] = useState(null);
-    const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null });
+    const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null , publicEncKey: null});
     const [currentMessages, setCurrentMessages] = useState(null);
     const [isAddContactOpen, setAddContactOpen] = useState(false);
+    const [secretKey, setSecretKey] = useState(null);
     //=====================================================================================================
     //Functions
 
@@ -34,6 +36,7 @@ function App() {
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             let walletAddress = accounts[0];
 
+            walletAddress = walletAddress.toLowerCase();
             setMyWalletAddress(walletAddress);
             return walletAddress;
 
@@ -61,7 +64,32 @@ function App() {
             const isUser = await tmpContract.isUser(walletAddress);
 
             if (isUser) {
+                let tmpSecretKey;
                 username = await tmpContract.getUser(walletAddress);
+
+                const databasePromise =  new Promise((resolve, reject) => {
+                    const openRequest = window.indexedDB.open("Site Storage", 1);
+            
+                    openRequest.onsuccess = function(event) {
+                        let database = event.target.result;
+                        let transaction = database.transaction("KeyStorage", "readonly");
+                        let store = transaction.objectStore("KeyStorage");
+                            
+                        let request = store.get(walletAddress);
+                            
+                        request.onsuccess = function() {
+                            tmpSecretKey = request.result.privateKey;
+                            resolve(tmpSecretKey);
+                        };
+                            
+                        request.onerror = function() {
+                            reject(new Error("KeyPair not found."))
+                        }};
+                });
+        
+                let secretKey = await databasePromise;
+
+                setSecretKey(secretKey);
 
             } else {
 
@@ -72,7 +100,8 @@ function App() {
                 }
 
                 let keys = nacl.box.keyPair();
-                let publicEncKey = keys.publicKey;
+
+                console.log("Priv:", keys.secretKey, "Pub:", keys.publicKey);
 
                 const databasePromise = window.indexedDB.open("Site Storage", 1);
                 databasePromise.onsuccess = function(event) {
@@ -87,7 +116,7 @@ function App() {
                         privateKey: keys.secretKey
                     }
 
-                    console.log(data);
+                    setSecretKey(secretKey);
 
                     store.put(data);
 
@@ -97,7 +126,7 @@ function App() {
                     };
                 };
 
-                await tmpContract.createUser(username, publicEncKey);
+                await tmpContract.createUser(username, keys.publicKey);
             }
 
             setUsername(username);
@@ -111,60 +140,74 @@ function App() {
         
     }
 
-    function selectChat(username, walletAddress) {
-        console.log(username, walletAddress);
-        setActiveChat({username, walletAddress});
+    function selectChat(username, walletAddress, publicEncKey) {
+        if (publicEncKey.startsWith('0x')) {
+            publicEncKey = publicEncKey.slice(2);
+        }
+        console.log("CONVERTED:", username, walletAddress, publicEncKey);
+        setActiveChat({username, walletAddress, publicEncKey});
     }
 
-    async function sendMessage(walletAddress, message) {
-        let secretKey, encryptedMessage, request2;
+    async function sendMessage(walletAddress, message, publicEncKey) {
+        let secretKey;
         try {
-            const databasePromise =  new Promise((resolve, reject) => {
-                const openRequest = window.indexedDB.open("Site Storage", 1);
-
-                openRequest.onsuccess = function(event) {
-                    let database = event.target.result;
-                    let transaction = database.transaction("KeyStorage", "readonly");
-                    let store = transaction.objectStore("KeyStorage");
-
-                    request2 = store.getAllKeys();
-                
-                    let request = store.get(myWalletAddress);
-                
-                    request.onsuccess = function() {
-                        console.log("req Success", request, request.result)
-                        secretKey = request.result;
-                        resolve(secretKey);
-                    };
-                
-                    request.onerror = function() {
-                        reject(new Error("KeyPair not found."))
-                    };
-                };
-            });
-
+                const databasePromise =  new Promise((resolve, reject) => {
+                    const openRequest = window.indexedDB.open("Site Storage", 1);
+            
+                    openRequest.onsuccess = function(event) {
+                        let database = event.target.result;
+                        let transaction = database.transaction("KeyStorage", "readonly");
+                        let store = transaction.objectStore("KeyStorage");
+                            
+                        let request = store.get(myWalletAddress);
+                            
+                        request.onsuccess = function() {
+                            secretKey = request.result.privateKey;
+                            resolve(secretKey);
+                        };
+                            
+                        request.onerror = function() {
+                            reject(new Error("KeyPair not found."))
+                        }};
+                });
+        
                 secretKey = await databasePromise;
 
                 let nonce = nacl.randomBytes(nacl.box.nonceLength);
 
-                message = naclUtil.decodeUTF8(message);
-                //nonce = naclUtil.decodeUTF8(nonce);
-                console.log(walletAddress);
-                walletAddress = naclUtil.decodeUTF8(walletAddress);
-                console.log(secretKey);
-                secretKey = naclUtil.decodeUTF8(secretKey);
+                console.log(nonce);
 
-                encryptedMessage = nacl.box(message, nonce, walletAddress, secretKey)
+                console.log("ENTER SEND MESSAGE")
+
+                console.log("secretKey:", secretKey, 
+                "message:", message + "\n" +
+                "publicEncKey:", publicEncKey);
+
+                message = naclUtil.decodeUTF8(message);
+
+                let uint32Array = new Uint32Array(publicEncKey.match(/.{1,8}/g).map(byte => parseInt(byte, 16)));
+                publicEncKey = new Uint8Array(uint32Array.buffer);
+
+                console.log("secretKey:", secretKey, 
+                "message:", message,
+                "publicEncKey:", publicEncKey);
+
+                let encryptedMessage = nacl.box(message, nonce, publicEncKey, secretKey);
+                console.log(
+                    "Message: " + message + "\n" +
+                    "Nonce: " + nonce + "\n" +
+                    "PubEncKey: " + publicEncKey + "\n" +
+                    "secretKey: " + secretKey + "\n" +
+                    "encMsg: " + encryptedMessage + "\n"
+                )
 
                 await contract.sendMessage(walletAddress, encryptedMessage, nonce);
         } catch (error) {
-            console.log("ALL:", request2.result);
-            console.log(error);
-            console.log(walletAddress, message, encryptedMessage);
+            console.log("ENTERED ERROR:", error);
         }
     }
 
-    async function addContact(walletAddress, nickname) {
+    async function addContact(walletAddress) {
         try {
             await contract.addContact(walletAddress)
         } catch (error) {
@@ -199,15 +242,48 @@ function App() {
         let tmpMessages = [];
 
         try {
-
             const wrappedMessages = await contract.receiveMessage(activeChat.walletAddress);
             wrappedMessages.forEach( ( message ) => {
-                tmpMessages.push({ "walletAddress": message[0], "timestamp": message[1], "content": message[2] });
+                tmpMessages.push({ "walletAddress": message[0], "timestamp": message[1], "content": message[2], "nonce": message[3] });
             })
 
         } catch (error) {
             console.log("errored:", error);
             tmpMessages = null;
+        }
+
+        try {
+            tmpMessages.forEach( (message) => {
+
+                if (message.nonce.startsWith('0x')) {
+                    message.nonce = message.nonce.slice(2);
+                }
+                message.nonce = new Uint8Array(message.nonce.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+
+            
+                if (message.content.startsWith('0x')) {
+                    message.content = message.content.slice(2);
+                }
+                let uint32Array = new Uint32Array(message.content.match(/.{1,8}/g).map(byte => parseInt(byte, 16)));
+                message.content = new Uint8Array(uint32Array.buffer);
+            
+                let tmpPublicKey = activeChat.publicEncKey;
+    
+                uint32Array = new Uint32Array(tmpPublicKey.match(/.{1,8}/g).map(byte => parseInt(byte, 16)));
+                tmpPublicKey = new Uint8Array(uint32Array.buffer);
+            
+                console.log(
+                    "Message: " + message.content + "\n" +
+                    "Nonce: " + message.nonce + "\n" +
+                    "PubEncKey: " + tmpPublicKey + "\n" +
+                    "secretKey: " + secretKey + "\n"
+                );
+            
+                message.content = nacl.box.open(message.content, message.nonce, tmpPublicKey, secretKey);
+                console.log(message.content);
+            })
+        } catch (error) {
+            console.log("Errored:", error);
         }
 
         setCurrentMessages(tmpMessages);
@@ -223,7 +299,8 @@ function App() {
             const wrappedContacts = await contract.getContacts()
 
             wrappedContacts.forEach( ( item ) => {
-                tmpContacts.push({ "username": item[0], "walletAddress": item[1] });
+                tmpContacts.push({ "username": item[0], "walletAddress": item[1], "publicEncKey": item[2] });
+                console.log({ "username": item[0], "walletAddress": item[1], "publicEncKey": item[2] });
             })
 
         } catch (error) {
@@ -301,7 +378,6 @@ function App() {
                 />
                 <ContactCardContainer
                     contacts={contacts}
-                    //Needs doing
                     activeChat={activeChat}
                     selectChat={selectChat}
                     openAddContact = {openAddContact}
@@ -311,6 +387,8 @@ function App() {
                     username = {activeChat.username}
                     myAddress = {myWalletAddress}
                     contactAddress = {activeChat.walletAddress}
+                    publicEncKey = {activeChat.publicEncKey}
+                    secretKey = {secretKey} 
                     sendMessage = {sendMessage}
                 />
             </div>

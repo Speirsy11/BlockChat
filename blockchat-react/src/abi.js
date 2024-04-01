@@ -26,9 +26,9 @@ export const abi = [
 				"type": "string"
 			},
 			{
-				"internalType": "bytes",
+				"internalType": "bytes32",
 				"name": "publicEncKey",
-				"type": "bytes"
+				"type": "bytes32"
 			}
 		],
 		"name": "createUser",
@@ -146,9 +146,9 @@ export const abi = [
 						"type": "uint256"
 					},
 					{
-						"internalType": "string",
+						"internalType": "bytes",
 						"name": "content",
-						"type": "string"
+						"type": "bytes"
 					},
 					{
 						"internalType": "bytes24",
@@ -192,14 +192,14 @@ export const abi = [
 				"type": "address"
 			},
 			{
-				"internalType": "string",
+				"internalType": "bytes",
 				"name": "content",
-				"type": "string"
+				"type": "bytes"
 			},
 			{
-				"internalType": "bytes",
+				"internalType": "bytes24",
 				"name": "messageNonce",
-				"type": "bytes"
+				"type": "bytes24"
 			}
 		],
 		"name": "sendMessage",
