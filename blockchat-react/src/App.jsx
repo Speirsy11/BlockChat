@@ -5,18 +5,19 @@ import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
 import Web3 from "web3";
 import nacl from "tweetnacl";
+import naclUtil from 'tweetnacl-util';
 import './App.css';
 
 function App() {
 
     //Data Structures
-    const CONTRACT_ADDRESS = "0x386e29f4EB2961ea7C664Ac8Fe2529a87769741F"
+    const CONTRACT_ADDRESS = "0x634D630BcBA58173184f9B54f7B2b1EE22604abD"
     //=====================================================================================================
     //Hooks
     const [contract, setContract] = useState(null);
     const [username, setUsername] = useState(null);
     const [contacts, setContacts] = useState(null);
-    const [walletAddress, setWalletAddress] = useState(null);
+    const [myWalletAddress, setMyWalletAddress] = useState(null);
     const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null });
     const [currentMessages, setCurrentMessages] = useState(null);
     const [isAddContactOpen, setAddContactOpen] = useState(false);
@@ -33,7 +34,7 @@ function App() {
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             let walletAddress = accounts[0];
 
-            setWalletAddress(walletAddress);
+            setMyWalletAddress(walletAddress);
             return walletAddress;
 
         } catch(error) {
@@ -75,6 +76,7 @@ function App() {
 
                 const databasePromise = window.indexedDB.open("Site Storage", 1);
                 databasePromise.onsuccess = function(event) {
+                    console.log("Opened DB");
 
                     let database = event.target.result;
                     let transaction = database.transaction("KeyStorage", "readwrite");
@@ -85,9 +87,12 @@ function App() {
                         privateKey: keys.secretKey
                     }
 
+                    console.log(data);
+
                     store.put(data);
 
                     transaction.oncomplete = function() {
+                        console.log("stored in db");
                         database.close();
                     };
                 };
@@ -112,38 +117,56 @@ function App() {
     }
 
     async function sendMessage(walletAddress, message) {
+        let secretKey, encryptedMessage, request2;
         try {
-            const databasePromise = window.indexedDB.open("Site Storage", 1);
-            let secretKey;
+            const databasePromise =  new Promise((resolve, reject) => {
+                const openRequest = window.indexedDB.open("Site Storage", 1);
 
-            databasePromise.onsuccess = function(event) {
-                let database = event.target.result;
-                let transaction = database.transaction("WalletStore", "readonly");
-                let store = transaction.objectStore("WalletStore");
-            
-                let request = store.get(walletAddress);
-            
-                request.onsuccess = function() {
-                    secretKey = request.result;
+                openRequest.onsuccess = function(event) {
+                    let database = event.target.result;
+                    let transaction = database.transaction("KeyStorage", "readonly");
+                    let store = transaction.objectStore("KeyStorage");
+
+                    request2 = store.getAllKeys();
+                
+                    let request = store.get(myWalletAddress);
+                
+                    request.onsuccess = function() {
+                        console.log("req Success", request, request.result)
+                        secretKey = request.result;
+                        resolve(secretKey);
+                    };
+                
+                    request.onerror = function() {
+                        reject(new Error("KeyPair not found."))
+                    };
                 };
-            
-                request.onerror = function() {
-                    console.log("KeyPair not found.");
-                };
-            };
+            });
 
-            let nonce = nacl.randomBytes(nacl.box.nonceLength);
-            let encryptedMessage = nacl.box(message, nonce, walletAddress, secretKey)
+                secretKey = await databasePromise;
 
-            await contract.sendMessage(walletAddress, encryptedMessage, nonce);
+                let nonce = nacl.randomBytes(nacl.box.nonceLength);
+
+                message = naclUtil.decodeUTF8(message);
+                //nonce = naclUtil.decodeUTF8(nonce);
+                console.log(walletAddress);
+                walletAddress = naclUtil.decodeUTF8(walletAddress);
+                console.log(secretKey);
+                secretKey = naclUtil.decodeUTF8(secretKey);
+
+                encryptedMessage = nacl.box(message, nonce, walletAddress, secretKey)
+
+                await contract.sendMessage(walletAddress, encryptedMessage, nonce);
         } catch (error) {
-            console.log(walletAddress, message);
+            console.log("ALL:", request2.result);
+            console.log(error);
+            console.log(walletAddress, message, encryptedMessage);
         }
     }
 
     async function addContact(walletAddress, nickname) {
         try {
-            await contract.addContact(walletAddress, nickname)
+            await contract.addContact(walletAddress)
         } catch (error) {
             //Do Nothing
             console.log(error)
@@ -163,11 +186,11 @@ function App() {
         const web3 = new Web3(window.ethereum);
         const accounts = await web3.eth.getAccounts();
         if (accounts.length === 0) {
-            setWalletAddress(null);
+            setMyWalletAddress(null);
         }
         else {
             const tmpWalletAddress = accounts[0];
-            setWalletAddress(tmpWalletAddress);
+            setMyWalletAddress(tmpWalletAddress);
         }
     }
 
@@ -229,9 +252,11 @@ function App() {
             }
 
             if (window.indexedDB) {
+                console.log("Initial Setup");
                 const databasePromise = window.indexedDB.open("Site Storage", 1);
 
                 databasePromise.onupgradeneeded = function(event) {
+                    console.log("DB Upgraded");
                     let database = event.target.result;
                     database.createObjectStore("KeyStorage", {keyPath: "walletAddress"});
                     database.close();
@@ -249,7 +274,7 @@ function App() {
 
     loadContacts();
 
-    }, [walletAddress, contract]);
+    }, [myWalletAddress, contract]);
 
     useEffect(() => {
 
@@ -266,25 +291,25 @@ function App() {
                 <AddContactModal
                     isOpen={isAddContactOpen}
                     onRequestClose={closeAddContact}
-                    addContact={() => addContact}
+                    addContact={addContact}
                     openAddContact={openAddContact}
                 />                
             <div className ="content">
                 <SideNav
                     blockchatLogin={blockchatLogin}
-                    walletAddress={walletAddress}
+                    walletAddress={myWalletAddress}
                 />
                 <ContactCardContainer
                     contacts={contacts}
                     //Needs doing
                     activeChat={activeChat}
                     selectChat={selectChat}
-                    addContact = {addContact}
+                    openAddContact = {openAddContact}
                 />
                 <MessageContainer 
                     messages = {currentMessages}
                     username = {activeChat.username}
-                    myAddress = {walletAddress}
+                    myAddress = {myWalletAddress}
                     contactAddress = {activeChat.walletAddress}
                     sendMessage = {sendMessage}
                 />

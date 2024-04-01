@@ -3,6 +3,7 @@ import DisplayContactCard from './DisplayContactCard';
 import "./ContactCardContainer.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import AddContactModal from './AddContactModal';
 
 
 function ContactCardContainer (properties) {
@@ -12,11 +13,10 @@ function ContactCardContainer (properties) {
             <div className="header">
                 <h2>Contacts</h2>
                 <div className="button-container">
-                    <button onClick={properties.addContact}>
+                    <button onClick={() => {properties.openAddContact()}}>
                         <FontAwesomeIcon
                             icon={faPlus}
                             style={{color: "#444444"}}
-                            onClick={properties.openAddContact}
                         />
                     </button>
                 </div>

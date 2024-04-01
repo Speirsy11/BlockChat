@@ -5,15 +5,16 @@ export const abi = [
 				"internalType": "address",
 				"name": "walletAddress",
 				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "username",
-				"type": "string"
 			}
 		],
 		"name": "addContact",
-		"outputs": [],
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -23,6 +24,11 @@ export const abi = [
 				"internalType": "string",
 				"name": "username",
 				"type": "string"
+			},
+			{
+				"internalType": "bytes",
+				"name": "publicEncKey",
+				"type": "bytes"
 			}
 		],
 		"name": "createUser",
@@ -45,6 +51,11 @@ export const abi = [
 						"internalType": "address",
 						"name": "walletAddress",
 						"type": "address"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "publicEncKey",
+						"type": "bytes32"
 					}
 				],
 				"internalType": "struct MessagingContract.contact[]",
@@ -138,6 +149,11 @@ export const abi = [
 						"internalType": "string",
 						"name": "content",
 						"type": "string"
+					},
+					{
+						"internalType": "bytes24",
+						"name": "nonce",
+						"type": "bytes24"
 					}
 				],
 				"internalType": "struct MessagingContract.message[]",
@@ -179,6 +195,11 @@ export const abi = [
 				"internalType": "string",
 				"name": "content",
 				"type": "string"
+			},
+			{
+				"internalType": "bytes",
+				"name": "messageNonce",
+				"type": "bytes"
 			}
 		],
 		"name": "sendMessage",

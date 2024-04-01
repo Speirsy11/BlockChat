@@ -32,12 +32,9 @@ function MessageContainer (properties) {
                     let sender, colour;
 
                     if(amISender(message, properties)) {
-
-                        console.log("you");
                         sender = "You";
                         colour = "#ADD8E6"
                     } else {
-                        console.log("username");
                         sender = properties.username;
                         colour = "#90EE90"
                     }
@@ -79,5 +76,7 @@ function amISender(message, properties) {
         return false;
     }
 }
+
+function decryptMessages() {}
 
 export default MessageContainer;
