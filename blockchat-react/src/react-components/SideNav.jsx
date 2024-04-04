@@ -20,7 +20,6 @@ function SideNav(properties) {
 }
 
 function greyOrOrange(properties) {
-    console.log(properties.walletAddress);
     if (properties.walletAddress) {
         return(
             <button onClick={alreadyConnected}>

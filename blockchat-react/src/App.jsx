@@ -5,14 +5,13 @@ import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
 import Web3 from "web3";
 import nacl from "tweetnacl";
-import naclUtil from 'tweetnacl-util';
-import { Buffer } from "buffer";
+import naclUtil, { encodeUTF8 } from 'tweetnacl-util';
 import './App.css';
 
 function App() {
 
     //Data Structures
-    const CONTRACT_ADDRESS = "0x2227Fe9e9ae7E481CB57B2fD51c857498486E4E3"
+    const CONTRACT_ADDRESS = "0xEA57799Cc2b7744639aB8D6d086F268f3838e464"
     //=====================================================================================================
     //Hooks
     const [contract, setContract] = useState(null);
@@ -64,7 +63,7 @@ function App() {
             const isUser = await tmpContract.isUser(walletAddress);
 
             if (isUser) {
-                let tmpSecretKey;
+                let tmpSecretKey, request2;
                 username = await tmpContract.getUser(walletAddress);
 
                 const databasePromise =  new Promise((resolve, reject) => {
@@ -101,11 +100,8 @@ function App() {
 
                 let keys = nacl.box.keyPair();
 
-                console.log("Priv:", keys.secretKey, "Pub:", keys.publicKey);
-
                 const databasePromise = window.indexedDB.open("Site Storage", 1);
                 databasePromise.onsuccess = function(event) {
-                    console.log("Opened DB");
 
                     let database = event.target.result;
                     let transaction = database.transaction("KeyStorage", "readwrite");
@@ -121,7 +117,6 @@ function App() {
                     store.put(data);
 
                     transaction.oncomplete = function() {
-                        console.log("stored in db");
                         database.close();
                     };
                 };
@@ -144,7 +139,6 @@ function App() {
         if (publicEncKey.startsWith('0x')) {
             publicEncKey = publicEncKey.slice(2);
         }
-        console.log("CONVERTED:", username, walletAddress, publicEncKey);
         setActiveChat({username, walletAddress, publicEncKey});
     }
 
@@ -175,31 +169,42 @@ function App() {
 
                 let nonce = nacl.randomBytes(nacl.box.nonceLength);
 
-                console.log(nonce);
+                console.log("=====ENTER SEND MESSAGE=====")
 
-                console.log("ENTER SEND MESSAGE")
-
-                console.log("secretKey:", secretKey, 
-                "message:", message + "\n" +
-                "publicEncKey:", publicEncKey);
+                console.log(
+                    "BEFORE ENCRYPTION:", 
+                    "Message: " + message + "\n" +
+                    "Nonce: " + nonce + "\n" +
+                    "PubEncKey: " + publicEncKey + "\n" +
+                    "secretKey: " + secretKey + "\n"
+                )
 
                 message = naclUtil.decodeUTF8(message);
 
                 let uint32Array = new Uint32Array(publicEncKey.match(/.{1,8}/g).map(byte => parseInt(byte, 16)));
                 publicEncKey = new Uint8Array(uint32Array.buffer);
 
-                console.log("secretKey:", secretKey, 
-                "message:", message,
-                "publicEncKey:", publicEncKey);
-
                 let encryptedMessage = nacl.box(message, nonce, publicEncKey, secretKey);
-                console.log(
-                    "Message: " + message + "\n" +
-                    "Nonce: " + nonce + "\n" +
-                    "PubEncKey: " + publicEncKey + "\n" +
-                    "secretKey: " + secretKey + "\n" +
-                    "encMsg: " + encryptedMessage + "\n"
-                )
+
+                console.log("Array:" + testing2(publicEncKey, secretKey, nonce, message));
+
+                console.log("AFTER ENCRYPTION:")
+                console.log("Message: " + message)
+                console.log("Nonce: " + nonce)
+                console.log("PubEncKey: " + publicEncKey) 
+                console.log("secretKey: " + secretKey)
+                console.log("encMsg: " + encryptedMessage)
+
+                console.log("MESSAGE BYTES:", Web3.utils.bytesToHex(encryptedMessage));
+
+                let testObj = new Uint8Array([177,49,41,250,23,151,155,247,85,216,189,58,152,231,22,143,163,99,99,161,127]);
+
+                console.log(testing2(publicEncKey, secretKey, nonce, encryptedMessage));
+
+                let decryptedMessage = nacl.box.open(encryptedMessage, nonce, publicEncKey, secretKey);
+                console.log("DECRYPTED:", naclUtil.encodeUTF8(decryptedMessage));
+
+                console.log("=====EXIT SEND MESSAGE=====")
 
                 await contract.sendMessage(walletAddress, encryptedMessage, nonce);
         } catch (error) {
@@ -218,7 +223,6 @@ function App() {
 
     function openAddContact() {
         setAddContactOpen(true);
-        console.log("clicked.")
     }
 
     function closeAddContact() {
@@ -255,32 +259,51 @@ function App() {
         try {
             tmpMessages.forEach( (message) => {
 
-                if (message.nonce.startsWith('0x')) {
+                console.log("=====ENTER LOAD MESSAGE=====")
+                console.log(activeChat.publicEncKey)
+
+                let tmpPublicKey = Web3.utils.hexToBytes(activeChat.publicEncKey);
+
+                console.log("BEFORE CONVERSION (HEXES):");
+                console.log("Message: " + message.content)
+                console.log("Nonce: " + message.nonce)
+                console.log("PubEncKey: " + tmpPublicKey) 
+                console.log("secretKey: " + secretKey)
+
+                console.log("MESSAGE BYTES:", Web3.utils.hexToBytes(message.content));
+
+                /*if (message.nonce.startsWith('0x')) {
                     message.nonce = message.nonce.slice(2);
                 }
-                message.nonce = new Uint8Array(message.nonce.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                message.nonce = new Uint8Array(message.nonce.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));*/
+                message.nonce = Web3.utils.hexToBytes(message.nonce);
 
             
-                if (message.content.startsWith('0x')) {
+                /*if (message.content.startsWith('0x')) {
                     message.content = message.content.slice(2);
                 }
                 let uint32Array = new Uint32Array(message.content.match(/.{1,8}/g).map(byte => parseInt(byte, 16)));
-                message.content = new Uint8Array(uint32Array.buffer);
-            
-                let tmpPublicKey = activeChat.publicEncKey;
+                message.content = new Uint8Array(uint32Array.buffer);*/
+                message.content = Web3.utils.hexToBytes(message.content);
     
-                uint32Array = new Uint32Array(tmpPublicKey.match(/.{1,8}/g).map(byte => parseInt(byte, 16)));
-                tmpPublicKey = new Uint8Array(uint32Array.buffer);
-            
-                console.log(
-                    "Message: " + message.content + "\n" +
-                    "Nonce: " + message.nonce + "\n" +
-                    "PubEncKey: " + tmpPublicKey + "\n" +
-                    "secretKey: " + secretKey + "\n"
-                );
-            
+
+                console.log("AFTER CONVERSION (BYTE ARRAYS):");
+                console.log("Message: " + message.content)
+                console.log("Nonce: " + message.nonce)
+                console.log("PubEncKey: " + tmpPublicKey) 
+                console.log("secretKey: " + secretKey)
+
+                console.log("MESSAGE BYTES:", Web3.utils.bytesToHex(message.content));
+
                 message.content = nacl.box.open(message.content, message.nonce, tmpPublicKey, secretKey);
+                message.content = naclUtil.encodeUTF8(message.content);
+
                 console.log(message.content);
+
+                console.log("Attempted Decryption:", naclUtil.encodeUTF8(message.content));
+
+                console.log("=====EXIT LOAD MESSAGE=====")
+
             })
         } catch (error) {
             console.log("Errored:", error);
@@ -300,7 +323,7 @@ function App() {
 
             wrappedContacts.forEach( ( item ) => {
                 tmpContacts.push({ "username": item[0], "walletAddress": item[1], "publicEncKey": item[2] });
-                console.log({ "username": item[0], "walletAddress": item[1], "publicEncKey": item[2] });
+                console.log(({ "username": item[0], "walletAddress": item[1], "publicEncKey": item[2] }));
             })
 
         } catch (error) {
@@ -329,11 +352,9 @@ function App() {
             }
 
             if (window.indexedDB) {
-                console.log("Initial Setup");
                 const databasePromise = window.indexedDB.open("Site Storage", 1);
 
                 databasePromise.onupgradeneeded = function(event) {
-                    console.log("DB Upgraded");
                     let database = event.target.result;
                     database.createObjectStore("KeyStorage", {keyPath: "walletAddress"});
                     database.close();
@@ -394,6 +415,17 @@ function App() {
             </div>
         </div>
     );
+}
+
+//DELETE
+function testing1(pubKey, privkey, nonce, message) {
+    let test1 = nacl.box.open(message, nonce, pubKey, privkey);
+    test1 = naclUtil.encodeUTF8(test1)
+    return test1;
+}
+
+function testing2(pubKey, privkey, nonce, message) {
+    return { encryptedMessage: nacl.box(message, nonce, pubKey, privkey), nonce: nonce};
 }
 
 export default App;

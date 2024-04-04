@@ -65,8 +65,7 @@ function MessageContainer (properties) {
                     /> : null}
 
                 {notFirstTime ? <button
-                    onClick={() => {console.log("WHAT IM LOOKING FOR", properties.contactAddress, inputContent, properties.publicEncKey)
-                        properties.sendMessage(properties.contactAddress, inputContent, properties.publicEncKey)}}>
+                    onClick={() => {properties.sendMessage(properties.contactAddress, inputContent, properties.publicEncKey)}}>
                     <FontAwesomeIcon icon={faPaperPlane} style={{color: "#444444"}}/>
                 </button> : null}
             </div>

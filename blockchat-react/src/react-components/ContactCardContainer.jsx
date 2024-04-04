@@ -28,10 +28,7 @@ function ContactCardContainer (properties) {
                     key = {index}
                     contact = {contact}
                     selected= {properties.activeChat && properties.activeChat.username === contact.username}
-                    onClick = {() => {
-                        console.log("clicked");
-                        console.log(contact.username, contact.walletAddress, contact.publicEncKey);
-                        properties.selectChat(contact.username, contact.walletAddress, contact.publicEncKey)}}
+                    onClick = {() => {properties.selectChat(contact.username, contact.walletAddress, contact.publicEncKey)}}
                     />
                 ))) : (<p>You have no contacts.</p>)}
             </div>
