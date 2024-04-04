@@ -8,14 +8,11 @@ function AddContactModal(properties) {
     const [walletInput, setWalletInput] = useState("");
 
     function submitDetails() {
-        console.log("sub")
-        if(nameInput !== "" && walletInput !== "") {
+        if(walletInput !== "") {
             properties.addContact(walletInput, nameInput);
-            console.log("sub")
         }
         else {
             alert("Please enter valid information.");
-            console.log("sub")
         }
     }
 
