@@ -10,8 +10,11 @@ function SideNav(properties) {
     return (
         <div className="sidenav">
             <div className="bottom">
-                <button>
-                    <FontAwesomeIcon icon={faCog} size="2x" />
+                <button onClick={() => properties.openSettings()}>
+                    <FontAwesomeIcon
+                        icon={faCog}
+                        size="2x"
+                    />
                 </button>
                 {greyOrOrange(properties)}
             </div>

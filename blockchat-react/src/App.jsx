@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SideNav, TopNav, ContactCardContainer, MessageContainer, AddContactModal } from "./react-components/react-components.jsx";
+import { SideNav, TopNav, ContactCardContainer, MessageContainer, AddContactModal, SettingsModal } from "./react-components/react-components.jsx";
 import { abi } from "./abi";
 import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
@@ -21,6 +21,8 @@ function App() {
     const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null , publicEncKey: null});
     const [currentMessages, setCurrentMessages] = useState(null);
     const [isAddContactOpen, setAddContactOpen] = useState(false);
+    const [isSettingsOpen, setSettingsOpen] = useState(false);
+    const [isDarkMode, setDarkMode] = useState(false);
     const [secretKey, setSecretKey] = useState(null);
     //=====================================================================================================
     //Functions
@@ -178,6 +180,14 @@ function App() {
         }
     }
 
+    async function changeUsername(newUsername) {
+        try {
+            await contract.changeUsername(newUsername);
+        } catch (error) {
+            console.log("ENTERED ERROR:", error);
+        }
+    }
+
     async function addContact(walletAddress) {
         try {
             await contract.addContact(walletAddress)
@@ -192,6 +202,14 @@ function App() {
 
     function closeAddContact() {
         setAddContactOpen(false);
+    }
+
+    function openSettings() {
+        setSettingsOpen(true);
+    }
+
+    function closeSettings() {
+        setSettingsOpen(false);
     }
 
     async function handleAccountChanged() {
@@ -320,12 +338,17 @@ function App() {
                     isOpen={isAddContactOpen}
                     onRequestClose={closeAddContact}
                     addContact={addContact}
-                    openAddContact={openAddContact}
                 />                
             <div className ="content">
                 <SideNav
                     blockchatLogin={blockchatLogin}
                     walletAddress={myWalletAddress}
+                    openSettings={openSettings}
+                />
+                <SettingsModal
+                    isOpen={isSettingsOpen}
+                    onRequestClose={closeSettings}
+                    changeUsername={changeUsername}
                 />
                 <ContactCardContainer
                     contacts={contacts}

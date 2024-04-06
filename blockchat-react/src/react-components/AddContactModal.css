@@ -2,13 +2,22 @@
     max-width: 600px;
     max-height: 250px;
     margin: auto;
-    display: flex;
   }
 
   .header {
-    justify-content: center;
+    margin: auto;
   }
 
   .content {
-    justify-content: space-between;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .content input{
+    flex: 5;
+    margin-right: 10px;
+  }
+
+  .content button{
+    flex: 1;
   }

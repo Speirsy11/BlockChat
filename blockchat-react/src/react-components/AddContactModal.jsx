@@ -4,12 +4,11 @@ import "./AddContactModal.css"
 
 function AddContactModal(properties) {
 
-    const [nameInput, setNameInput] = useState("");
     const [walletInput, setWalletInput] = useState("");
 
     function submitDetails() {
         if(walletInput !== "") {
-            properties.addContact(walletInput, nameInput);
+            properties.addContact(walletInput);
         }
         else {
             alert("Please enter valid information.");
@@ -27,6 +26,7 @@ function AddContactModal(properties) {
             >
                 <div
                     className="header"
+                    style={{ textAlign: 'center' }}
                 >
                     <h2>
                         Add New Contact
@@ -37,15 +37,10 @@ function AddContactModal(properties) {
                 >
                     <input
                         type="text"
-                        value={nameInput}
-                        onChange={(e) => setNameInput(e.target.value)}
-                        placeholder="Contact Name"
-                    />
-                    <input
-                        type="text"
                         value={walletInput}
                         onChange={(e) => setWalletInput(e.target.value)}
                         placeholder="Contact Wallet Address"
+                        style={{ textAlign: 'center' }}
                     />
                     <button
                         onClick={() => submitDetails(properties)}

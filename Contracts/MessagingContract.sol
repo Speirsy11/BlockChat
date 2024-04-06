@@ -104,6 +104,10 @@ contract MessagingContract {
 
     }
 
+    function changeUsername (string calldata newUsername) public {
+        registeredUsers[msg.sender].username = newUsername;
+    }
+
     //Contact Managing Functions
     //Checks if the given address correpsonds to a user's contacts and returns true if so, false if not.
     function isContact(address contactwalletAddress) public view returns (bool) {

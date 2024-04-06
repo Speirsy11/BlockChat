@@ -4,13 +4,10 @@ import "./MessageContainer.css";
 import MessageCard from './MessageCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import nacl from 'tweetnacl';
 
 function MessageContainer (properties) {
     
     const [inputContent, setInputContent] = useState('');
-    
-    function getSecretKey() {properties.getSecretKey()}
 
     const handleInputChange = (event) => {
         setInputContent(event.target.value);
@@ -31,8 +28,6 @@ function MessageContainer (properties) {
             <div className="message-list"> {
                 properties.messages ? (
                 properties.messages.map((message, index) => {
-
-                    //message.content = decryptMessage(message.content, message.nonce, properties.publicEncKey, properties.secretKey);
 
                     let sender, colour;
 
