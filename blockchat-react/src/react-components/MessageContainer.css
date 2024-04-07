@@ -20,6 +20,7 @@
 
 .input-container {
     display: flex;
+    flex-direction: row;
     align-items: center;
     padding: 10px;
     bottom: 0;
@@ -29,7 +30,7 @@
   }
   
 .input-container input {
-    flex: 1; /* Take remaining width */
+    flex: 9;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -37,6 +38,7 @@
   }
   
 .input-container button {
+    flex: 1;
     color: white;
     border: none;
     padding: 10px;

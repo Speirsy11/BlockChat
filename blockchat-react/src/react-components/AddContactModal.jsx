@@ -26,7 +26,6 @@ function AddContactModal(properties) {
             >
                 <div
                     className="header"
-                    style={{ textAlign: 'center' }}
                 >
                     <h2>
                         Add New Contact
@@ -40,7 +39,6 @@ function AddContactModal(properties) {
                         value={walletInput}
                         onChange={(e) => setWalletInput(e.target.value)}
                         placeholder="Contact Wallet Address"
-                        style={{ textAlign: 'center' }}
                     />
                     <button
                         onClick={() => submitDetails(properties)}
