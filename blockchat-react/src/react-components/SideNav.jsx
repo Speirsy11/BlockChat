@@ -26,22 +26,22 @@ function greyOrOrange(properties) {
     if (properties.walletAddress) {
         return(
             <button onClick={alreadyConnected}>
-            <img
-            src = {metamaskOrange}
-            alt="Orange MetaMask Icon"
-            className="set-image-size"
-            />
+                <img
+                    src = {metamaskOrange}
+                    alt="Orange MetaMask Icon"
+                    className="set-image-size"
+                />
             </button>
         )
     }
     else {
         return (
             <button onClick={() => properties.blockchatLogin()}>
-            <img
-            src = {metamaskGrey}
-            alt="Grey MetaMask Icon"
-            className="set-image-size"
-            />
+                <img
+                    src = {metamaskGrey}
+                    alt="Grey MetaMask Icon"
+                    className="set-image-size"
+                />
             </button>
         )
     }

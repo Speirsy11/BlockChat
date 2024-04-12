@@ -4,10 +4,11 @@ import "./MessageContainer.css";
 import MessageCard from './MessageCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import ethereumLogo from "./ethereumlogo.png"
 
 function MessageContainer (properties) {
     
-    const [inputContent, setInputContent] = useState('');
+    const [inputContent, setInputContent] = useState("");
 
     const handleInputChange = (event) => {
         setInputContent(event.target.value);
@@ -22,8 +23,20 @@ function MessageContainer (properties) {
 
     return (
         <div className = "message-container">
-            <div className="title">
-                <h2>{properties.username ? properties.username : "Messages"}</h2>
+            <div className="header">
+                <div className="title">
+                    <h2>{properties.username ? properties.username : "Messages"}</h2>
+                </div>
+                <div className="ethereum-logo">
+                    {notFirstTime ? <button
+                        onClick={() => {properties.openSendETH()}}>
+                        <img
+                            src = {ethereumLogo}
+                            alt="Ethereum Logo"
+                            className="ethereum-logo"
+                        />
+                        </button> : null}
+                </div>
             </div>
             <div className="message-list"> {
                 properties.messages ? (
@@ -57,11 +70,13 @@ function MessageContainer (properties) {
                     placeholder="Type your message here..."
                     value={inputContent}
                     onChange={handleInputChange}
-                    /> : null}
-
+                /> : null}
                 {notFirstTime ? <button
-                    onClick={() => {properties.sendMessage(properties.contactAddress, inputContent, properties.publicEncKey)}}>
-                    <FontAwesomeIcon icon={faPaperPlane} style={{color: "#444444"}}/>
+                    onClick={() => {
+                        properties.sendMessage(properties.contactAddress, inputContent, properties.publicEncKey);
+                        setInputContent("");
+                        }}>
+                    <FontAwesomeIcon icon={faPaperPlane} style={{color: "#444444", width: "20px", height: "auto"}}/>
                 </button> : null}
             </div>
         </div>
@@ -76,5 +91,7 @@ function amISender(message, properties) {
         return false;
     }
 }
+
+
 
 export default MessageContainer;

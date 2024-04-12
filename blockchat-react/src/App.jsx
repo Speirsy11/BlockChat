@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SideNav, TopNav, ContactCardContainer, MessageContainer, AddContactModal, SettingsModal } from "./react-components/react-components.jsx";
+import { SideNav, TopNav, ContactCardContainer, MessageContainer, AddContactModal, SettingsModal, SendETHModal } from "./react-components/react-components.jsx";
 import { abi } from "./abi";
 import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
@@ -11,7 +11,7 @@ import './App.css';
 function App() {
 
     //Data Structures
-    const CONTRACT_ADDRESS = "0xcA8f9f64C4BD40BB182e86cd40cA43234B8ce1Dc"
+    const CONTRACT_ADDRESS = "0x66f352c6F664535b9f3ED01a9391d712858ECeCa"
     //=====================================================================================================
     //Hooks
     const [contract, setContract] = useState(null);
@@ -24,6 +24,7 @@ function App() {
     const [isSettingsOpen, setSettingsOpen] = useState(false);
     const [isDarkMode, setDarkMode] = useState(false);
     const [secretKey, setSecretKey] = useState(null);
+    const [isSendETHOpen, setSendETHOpen] = useState(false);
     //=====================================================================================================
     //Functions
 
@@ -51,88 +52,96 @@ function App() {
     //not exist, the user is prompted to create one.
     async function blockchatLogin() {
 
-        let walletAddress = await connectToWallet();
+        try {
 
-        //In JS, variables that have value are considered Truthy so this is entered if an address is found.
-        if (walletAddress) {
+            let walletAddress = await connectToWallet();
 
-            const provider = new Web3Provider(window.ethereum);
-            const signer = provider.getSigner();
-            const tmpContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
-            setContract(tmpContract);
-
-            let username;
-            const isUser = await tmpContract.isUser(walletAddress);
-
-            if (isUser) {
-                let tmpSecretKey;
-                username = await tmpContract.getUser(walletAddress);
-
-                const databasePromise =  new Promise((resolve, reject) => {
-                    const openRequest = window.indexedDB.open("Site Storage", 1);
-            
-                    openRequest.onsuccess = function(event) {
-                        let database = event.target.result;
-                        let transaction = database.transaction("KeyStorage", "readonly");
-                        let store = transaction.objectStore("KeyStorage");
-                            
-                        let request = store.get(walletAddress);
-                            
-                        request.onsuccess = function() {
-                            tmpSecretKey = request.result.privateKey;
-                            resolve(tmpSecretKey);
-                        };
-                            
-                        request.onerror = function() {
-                            reject(new Error("KeyPair not found."))
-                        }};
-                });
-        
-                let secretKey = await databasePromise;
-
-                setSecretKey(secretKey);
-
-            } else {
-
-                username = prompt("You do not have an account. Please enter a username to create one.");
-
-                if (username === "") {
-                    username = "newUser";
-                }
-
-                let keys = nacl.box.keyPair();
-
-                const databasePromise = window.indexedDB.open("Site Storage", 1);
-                databasePromise.onsuccess = function(event) {
-
-                    let database = event.target.result;
-                    let transaction = database.transaction("KeyStorage", "readwrite");
-                    let store = transaction.objectStore("KeyStorage");
+            //In JS, variables that have value are considered Truthy so this is entered if an address is found.
+            if (walletAddress) {
+    
+                const provider = new Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                const tmpContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+                setContract(tmpContract);
+    
+                let username;
+                const isUser = await tmpContract.isUser(walletAddress);
+    
+                if (isUser) {
+                    let tmpSecretKey;
+                    username = await tmpContract.getUser(walletAddress);
+    
+                    const databasePromise =  new Promise((resolve, reject) => {
+                        const openRequest = window.indexedDB.open("Site Storage", 1);
                 
-                    let data = {
-                        walletAddress: walletAddress,
-                        privateKey: keys.secretKey
-                    }
-
+                        openRequest.onsuccess = function(event) {
+                            let database = event.target.result;
+                            let transaction = database.transaction("KeyStorage", "readonly");
+                            let store = transaction.objectStore("KeyStorage");
+                                
+                            let request = store.get(walletAddress);
+                                
+                            request.onsuccess = function() {
+                                tmpSecretKey = request.result.privateKey;
+                                resolve(tmpSecretKey);
+                            };
+                                
+                            request.onerror = function() {
+                                reject(new Error("KeyPair not found."))
+                            }};
+                    });
+            
+                    let secretKey = await databasePromise;
+    
                     setSecretKey(secretKey);
-
-                    store.put(data);
-
-                    transaction.oncomplete = function() {
-                        database.close();
+    
+                } else {
+    
+                    username = prompt("You do not have an account. Please enter a username to create one.");
+    
+                    if (username === "") {
+                        username = "newUser";
+                    }
+    
+                    let keys = nacl.box.keyPair();
+    
+                    const databasePromise = window.indexedDB.open("Site Storage", 1);
+                    databasePromise.onsuccess = function(event) {
+    
+                        let database = event.target.result;
+                        let transaction = database.transaction("KeyStorage", "readwrite");
+                        let store = transaction.objectStore("KeyStorage");
+                    
+                        let data = {
+                            walletAddress: walletAddress,
+                            privateKey: keys.secretKey
+                        }
+    
+                        setSecretKey(secretKey);
+    
+                        store.put(data);
+    
+                        transaction.oncomplete = function() {
+                            database.close();
+                        };
                     };
-                };
-
-                await tmpContract.createUser(username, keys.publicKey);
+    
+                    await tmpContract.createUser(username, keys.publicKey);
+                }
+    
+                setUsername(username);
+    
+                alert("Connected to BlockChat account.");
+    
+            } else {
+    
+                alert("Failed to login.");
+    
             }
 
-            setUsername(username);
-            alert("Connected to BlockChat account.");
-
-        } else {
-
+        } catch (error) {
+            console.log("ENTERED ERROR:", error);
             alert("Failed to login.");
-
         }
         
     }
@@ -210,6 +219,35 @@ function App() {
 
     function closeSettings() {
         setSettingsOpen(false);
+    }
+
+    function openSendETH() {
+        console.log("clicked2");
+        setSendETHOpen(true);
+    }
+
+    function closeSendETH() {
+        setSendETHOpen(false);
+    }
+
+    function sendETH(myWalletAddress, theirWalletAddress, ethValue) {
+        const web3 = new Web3(window.ethereum);
+        const weiValue = web3.utils.toWei(ethValue, 'ether');
+        console.log(ethValue, weiValue);
+
+        web3.eth.sendTransaction({
+            from: myWalletAddress,
+            to: theirWalletAddress,
+            value: weiValue,
+            gas: 50000
+        })
+        .on("transactionHash", (hash) => {
+            alert("ETH transferred successfully.");
+        })
+        .on('error', (error) => {
+            console.log("Transaction error:", error);
+            alert("ETH failed to send.");
+        });
     }
 
     async function handleAccountChanged() {
@@ -333,6 +371,7 @@ function App() {
                 <TopNav 
                     loadMessages={loadMessages}
                     loadContacts={loadContacts}
+                    username={username}
                 />
                 <AddContactModal
                     isOpen={isAddContactOpen}
@@ -364,6 +403,15 @@ function App() {
                     publicEncKey = {activeChat.publicEncKey}
                     secretKey = {secretKey} 
                     sendMessage = {sendMessage}
+                    sendETH = {sendETH}
+                    openSendETH = {openSendETH}
+                />
+                <SendETHModal
+                    isOpen={isSendETHOpen}
+                    onRequestClose={closeSendETH}
+                    sendETH={sendETH}
+                    myWalletAddress={myWalletAddress}
+                    theirWalletAddress={activeChat.walletAddress}
                 />
             </div>
         </div>

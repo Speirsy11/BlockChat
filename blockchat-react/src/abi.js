@@ -22,6 +22,19 @@ export const abi = [
 		"inputs": [
 			{
 				"internalType": "string",
+				"name": "newUsername",
+				"type": "string"
+			}
+		],
+		"name": "changeUsername",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
 				"name": "username",
 				"type": "string"
 			},

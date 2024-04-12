@@ -1,0 +1,13 @@
+.login-bubble {
+    background-color: azure;
+    color: #444444;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: sans-serif;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.logged-out {
+    
+}

@@ -7,39 +7,75 @@ function SettingsModal(properties) {
     const [isDarkMode, setDarkMode] = useState(properties.isDarkMode);
     const [changingUsername, setChangingUsername] = useState(false);
     const [userInput, setUserInput] = useState("");
+    const [modal, setModal] = useState(0);
 
-    let open = false;
-    open = open ? false : true;
+    function wrappedClose() {
+        setModal(0);
+        properties.onRequestClose();
+    }
 
-    let currentModal = (<Modal
-        isOpen = {properties.isOpen}
-        onRequestClose={properties.onRequestClose}
-        contentLabel="Settings"
-    >
-        <div
-            className="header"
+    const settingsModal = 
+        (<Modal
+            isOpen = {properties.isOpen}
+            onRequestClose={wrappedClose}
+            contentLabel="Settings"
         >
-            <h2>
-                Settings
-            </h2>
-        </div>
-        <div
-            className="content"
+            <div
+                className="header"
+            >
+                <h2>
+                    Settings
+                </h2>
+            </div>
+            <div
+                className="content"
+            >
+                <button
+                    onClick={() => {setModal(1)}}
+                    style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
+                >
+                    Change Username
+                </button>
+                <button
+                    onClick={() => {}}
+                    style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
+                >
+                    Enter Dark Mode
+                </button>
+            </div>
+        </Modal>);
+
+    const inputModal = 
+        ( <Modal
+            isOpen = {properties.isOpen}
+            onRequestClose={wrappedClose}
+            contentLabel="Settings"
         >
-            <button
-                onClick={() => {setChangingUsername(open)}}
-                style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
+            <div
+                className="header"
             >
-                Change Username
-            </button>
-            <button
-                onClick={() => {}}
-                style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
+                <h2>
+                    Change Username
+                </h2>
+            </div>
+            <div
+                className="content"
             >
-                Enter Dark Mode
-            </button>
-        </div>
-    </Modal>);;
+                <input
+                    type="text"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder="New Username"
+                    style={{textAlign: "center"}}
+                />
+                <button
+                    onClick={() => {submitDetails(userInput)}}
+                    style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
+                >
+                    Submit
+                </button>
+            </div>
+        </Modal>);
 
     function submitDetails() {
         if(userInput !== "") {
@@ -50,79 +86,7 @@ function SettingsModal(properties) {
         }
     }
 
-    useEffect(() => {
-
-        console.log("entered");
-
-        function switchUI() {
-            console.log(changingUsername);
-            if (!changingUsername) {
-                currentModal = (<Modal
-                    isOpen = {properties.isOpen}
-                    onRequestClose={properties.onRequestClose}
-                    contentLabel="Settings"
-                >
-                    <div
-                        className="header"
-                    >
-                        <h2>
-                            Settings
-                        </h2>
-                    </div>
-                    <div
-                        className="content"
-                    >
-                        <button
-                            onClick={() => {setChangingUsername(open)}}
-                            style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
-                        >
-                            Change Username
-                        </button>
-                        <button
-                            onClick={() => {}}
-                            style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
-                        >
-                            Enter Dark Mode
-                        </button>
-                    </div>
-                </Modal>);
-            }
-            else {
-                console.log("should change");
-                currentModal = ( <Modal
-                    isOpen = {properties.isOpen}
-                    onRequestClose={properties.onRequestClose}
-                    contentLabel="Settings"
-                >
-                    <div
-                        className="header"
-                    >
-                        <h2>
-                            Change Username
-                        </h2>
-                    </div>
-                    <div
-                        className="content"
-                    >
-                        <input
-                            type="text"
-                            value={userInput}
-                            onChange={(e) => setUserInput(e.target.value)}
-                            placeholder="New Username"
-                        />
-                        <button
-                            onClick={() => {submitDetails(userInput)}}
-                            style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
-                        >
-                            Submit
-                        </button>
-                    </div>
-                </Modal>);
-            }
-        }
-        switchUI();
-
-    }, [changingUsername]);
+    const currentModal = modal == 0 ? settingsModal : inputModal;
 
     return (
         <div className="container">

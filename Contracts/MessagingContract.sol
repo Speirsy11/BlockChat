@@ -104,7 +104,7 @@ contract MessagingContract {
 
     }
 
-    function changeUsername (string calldata newUsername) public {
+    function changeUsername(string calldata newUsername) public {
         registeredUsers[msg.sender].username = newUsername;
     }
 
@@ -166,6 +166,19 @@ contract MessagingContract {
         require(userExistsBool == true, "You do not have an account.");
         require(contactExistsBool == true, "This user does not exist.");
         require(isContactBool == true, "This user is not one of your contacts.");
+
+        //Updated Username Handling
+        contact[] memory tmpContacts = new contact[](registeredUsers[msg.sender].contacts.length);
+        for (uint i = 0; i < registeredUsers[msg.sender].contacts.length; i++) {
+            user memory tmpUser = registeredUsers[registeredUsers[msg.sender].contacts[i].walletAddress];
+            contact memory tmpContact = contact(tmpUser.username, tmpUser.walletAddress, tmpUser.publicEncKey);
+            tmpContacts[i] = (tmpContact);
+        }
+
+        for (uint j = 0; j < tmpContacts.length; j++) {
+            registeredUsers[msg.sender].contacts[j] = tmpContacts[j];
+        }
+
 
         bytes32 uniqueHash = createHashCode(walletAddress);
         message memory newMessage = message(msg.sender, block.timestamp, content, messageNonce);
