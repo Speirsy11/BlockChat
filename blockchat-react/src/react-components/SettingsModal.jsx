@@ -21,7 +21,7 @@ function SettingsModal(properties) {
             contentLabel="Settings"
         >
             <div
-                className="header"
+                className="settings-header"
             >
                 <h2>
                     Settings

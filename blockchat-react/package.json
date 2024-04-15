@@ -16,6 +16,7 @@
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
     "react-scripts": "^5.0.1",
+    "react-tooltip": "^5.26.3",
     "text-encoding": "^0.7.0",
     "tweetnacl": "^1.0.3",
     "tweetnacl-util": "^0.15.1",

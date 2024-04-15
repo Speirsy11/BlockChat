@@ -25,7 +25,7 @@ function SendETHModal(properties) {
                 contentLabel="Send ETH"
             >
                 <div
-                    className="header"
+                    className="send-eth-header"
                 >
                     <h3>
                         How much ETH would you like to send?

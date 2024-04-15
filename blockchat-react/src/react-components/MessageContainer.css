@@ -1,28 +1,23 @@
 .message-container {
     flex: 3;
-    display: flex;
     flex-direction: column;
     overflow-y: auto;
 }
 
-.messages-list {
-    flex: 3;
-    padding-top: 20px;
-    padding-bottom: 100px;
-}
-
-.header {
-  margin-top: auto;
+.messages-header {
   width: 100%;
-  height: 90px;
-  justify-content: center;
+  height: 9%;
+  justify-content: space-between;
+  align-items: center;
   display: flex;
   border-bottom: 3px solid #444444;
 }
 
+.messages-list {
+    flex: 3;
+}
+
 .title {
-    top: 0;
-    padding: 10px;
     flex: 15;
 }
 
@@ -34,7 +29,8 @@
     bottom: 0;
     left: 0;
     width: 98%;
-    flex: 1;
+    height: 60px;
+
   }
   
 .input-container input {

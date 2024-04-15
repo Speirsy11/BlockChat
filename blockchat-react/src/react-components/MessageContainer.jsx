@@ -5,6 +5,7 @@ import MessageCard from './MessageCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import ethereumLogo from "./ethereumlogo.png"
+import { Tooltip } from 'react-tooltip';
 
 function MessageContainer (properties) {
     
@@ -23,19 +24,22 @@ function MessageContainer (properties) {
 
     return (
         <div className = "message-container">
-            <div className="header">
+            <div className="messages-header">
                 <div className="title">
                     <h2>{properties.username ? properties.username : "Messages"}</h2>
                 </div>
                 <div className="ethereum-logo">
                     {notFirstTime ? <button
-                        onClick={() => {properties.openSendETH()}}>
+                        onClick={() => {properties.openSendETH()}}
+                        data-tooltip-id="send-eth-tooltip"
+                        data-tooltip-content={"Send ETH to contact"}>
                         <img
                             src = {ethereumLogo}
                             alt="Ethereum Logo"
                             className="ethereum-logo"
                         />
                         </button> : null}
+                    {notFirstTime ? <Tooltip id="send-eth-tooltip"/> : null}
                 </div>
             </div>
             <div className="message-list"> {
@@ -75,9 +79,12 @@ function MessageContainer (properties) {
                     onClick={() => {
                         properties.sendMessage(properties.contactAddress, inputContent, properties.publicEncKey);
                         setInputContent("");
-                        }}>
+                        }}
+                    data-tooltip-id="send-message-tooltip"
+                    data-tooltip-content={"Send Message"}>
                     <FontAwesomeIcon icon={faPaperPlane} style={{color: "#444444", width: "20px", height: "auto"}}/>
                 </button> : null}
+                {notFirstTime ? <Tooltip id="send-message-tooltip"/> : null}
             </div>
         </div>
     );

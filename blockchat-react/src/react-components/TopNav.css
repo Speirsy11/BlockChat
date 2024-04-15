@@ -26,3 +26,8 @@
     border: none;
     cursor: pointer;
   }
+
+  .logo {
+    width: auto;
+    height: 50px;
+  }

@@ -5,7 +5,7 @@ import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
 import Web3 from "web3";
 import nacl from "tweetnacl";
-import naclUtil, { encodeUTF8 } from 'tweetnacl-util';
+import naclUtil from 'tweetnacl-util';
 import './App.css';
 
 function App() {
@@ -241,7 +241,7 @@ function App() {
             value: weiValue,
             gas: 50000
         })
-        .on("transactionHash", (hash) => {
+        .on("transactionHash", () => {
             alert("ETH transferred successfully.");
         })
         .on('error', (error) => {

@@ -1,25 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import DisplayContactCard from './DisplayContactCard';
 import "./ContactCardContainer.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import AddContactModal from './AddContactModal';
+import { Tooltip } from 'react-tooltip';
 
 
 function ContactCardContainer (properties) {
 
     return (
         <div className="contact-container">
-            <div className="header">
+            <div className="contact-header">
                 <h2>Contacts</h2>
-                <div className="button-container">
-                    <button onClick={() => {properties.openAddContact()}}>
+                <button
+                    onClick={() => {properties.openAddContact()}}
+                    data-tooltip-id="add-contact-tooltip"
+                    data-tooltip-content={"Add Contact"}>
                         <FontAwesomeIcon
                             icon={faPlus}
                             style={{color: "#444444"}}
+                            size='lg'
                         />
-                    </button>
-                </div>
+                </button>
+                <Tooltip id="add-contact-tooltip"/>
             </div>
             <div className="contact-list"> {
                 properties.contacts ? (

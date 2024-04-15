@@ -5,6 +5,7 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 3px solid #444444; /* Add top border */
   }
   
   .contact-card:hover {
