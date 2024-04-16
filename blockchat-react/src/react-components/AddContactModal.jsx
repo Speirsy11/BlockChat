@@ -15,14 +15,20 @@ function AddContactModal(properties) {
         }
     }
 
+    const modalPadding = properties.isOpen ? "20px" : "0"
+
     return (
         <div
-            className="container"
+            className="modal-container"
         >
             <Modal
                 isOpen = {properties.isOpen}
                 onRequestClose={properties.onRequestClose}
                 contentLabel="Add Contact"
+                className={"modal-container"}
+                style={{content: {
+                    padding: modalPadding
+                }}}
             >
                 <div
                     className="header"

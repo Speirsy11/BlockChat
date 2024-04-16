@@ -201,6 +201,7 @@ function App() {
         try {
             await contract.addContact(walletAddress)
         } catch (error) {
+            alert("This is not a valid address, please try again.")
             console.log("ENTERED ERROR:", error);
         }
     }

@@ -14,11 +14,17 @@ function SettingsModal(properties) {
         properties.onRequestClose();
     }
 
+    const modalPadding = properties.isOpen ? "20px" : "0"
+
     const settingsModal = 
         (<Modal
             isOpen = {properties.isOpen}
             onRequestClose={wrappedClose}
             contentLabel="Settings"
+            className={"modal-container"}
+            style={{content: {
+                padding: modalPadding
+            }}}
         >
             <div
                 className="settings-header"
@@ -50,6 +56,10 @@ function SettingsModal(properties) {
             isOpen = {properties.isOpen}
             onRequestClose={wrappedClose}
             contentLabel="Settings"
+            className={"modal-container"}
+            style={{content: {
+                padding: modalPadding
+            }}}
         >
             <div
                 className="header"
@@ -66,7 +76,6 @@ function SettingsModal(properties) {
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder="New Username"
-                    style={{textAlign: "center"}}
                 />
                 <button
                     onClick={() => {submitDetails(userInput)}}
@@ -89,7 +98,7 @@ function SettingsModal(properties) {
     const currentModal = modal == 0 ? settingsModal : inputModal;
 
     return (
-        <div className="container">
+        <div className="modal-container">
            {currentModal}
         </div>
     );

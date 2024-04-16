@@ -19,7 +19,8 @@
   }
 
   .contact-header h2 {
-    margin-left: 10px;
+    margin-left: 90px;
+    flex: 15;
   }
 
   .contact-header button {
@@ -27,5 +28,6 @@
     border:#444444;
     border-radius: 5px;
     cursor: pointer;
+    flex: 1;
   }
 

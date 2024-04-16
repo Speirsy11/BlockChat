@@ -15,14 +15,20 @@ function SendETHModal(properties) {
         }
     }
 
+    const modalPadding = properties.isOpen ? "20px" : "0"
+
     return (
         <div
-            className="container"
+            className="modal-container"
         >
             <Modal
                 isOpen = {properties.isOpen}
                 onRequestClose={properties.onRequestClose}
                 contentLabel="Send ETH"
+                className={"modal-container"}
+            style={{content: {
+                padding: modalPadding
+            }}}
             >
                 <div
                     className="send-eth-header"
