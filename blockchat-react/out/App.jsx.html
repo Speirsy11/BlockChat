@@ -1,4 +1,32 @@
-import React, { useEffect, useState } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: App.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: App.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useEffect, useState } from "react";
 import { SideNav, TopNav, ContactCardContainer, MessageContainer, AddContactModal, SettingsModal, SendETHModal } from "./react-components/react-components.jsx";
 import { abi } from "./abi";
 import { ethers } from "ethers";
@@ -10,78 +38,49 @@ import './App.css';
 
 function App() {
 
-    /** 
-     * The BlockChat smart contract address.
-     * @type {string}
-     */
+    //Data Structures
     const CONTRACT_ADDRESS = "0x66f352c6F664535b9f3ED01a9391d712858ECeCa"
-
-    /** 
+    //=====================================================================================================
+    //Hooks
+    /**
      * The BlockChat smart contract.
-     * @type {ethers.Contract}
+     * @const {ethers.Contract}
      */
     const [contract, setContract] = useState(null);
-
     /**
      * The user's username.
      * @type {string | null}
      */
     const [username, setUsername] = useState(null);
-
     /**
      * A list of the user's contacts.
-     * @type {Array | null}
+     * @const {Array}
      */
     const [contacts, setContacts] = useState(null);
-
-    /**
+        /**
      * The user's wallet address.
-     * @type {string | null}
+     * @const {string}
      */
     const [myWalletAddress, setMyWalletAddress] = useState(null);
-
     /**
      * The contact information of whatever chat is selected.
-     * @type {{ username: string | null, walletAddress: string | null, publicEncKey: string | null}}
+     * @const {{ string, string, string}}
      */
     const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null , publicEncKey: null});
-
     /**
      * A list of the messages between the user and the selected contact.
-     * @type {Array | null}
+     * @const {Array}
      */
     const [currentMessages, setCurrentMessages] = useState(null);
-
     /**
-     * A boolean representing whether the addContact modal is open or not.
-     * @type {bool | false}
+     * The contact information of whatever chat is selected.
+     * @const {bool}
      */
     const [isAddContactOpen, setAddContactOpen] = useState(false);
-
-    /**
-     * A boolean representing whether the settings modal is open or not.
-     * @type {bool | false}
-     */
     const [isSettingsOpen, setSettingsOpen] = useState(false);
-
-    /**
-     * A boolean representing whether the sending ETH modal is open or not.
-     * @type {bool | false}
-     */
-    const [isSendETHOpen, setSendETHOpen] = useState(false);
-
-    /**
-     * A boolean representing whether the dark mode is enabled or not.
-     * @type {bool | false}
-     */
     const [isDarkMode, setDarkMode] = useState(false);
-
-    /**
-     * The user's secret key.
-     * @type {Uint8Array | null}
-     */
     const [secretKey, setSecretKey] = useState(null);
-    
+    const [isSendETHOpen, setSendETHOpen] = useState(false);
     //=====================================================================================================
     //Functions
 
@@ -435,27 +434,27 @@ function App() {
     }, [activeChat]);
 
     return (
-        <div className="app">
-                <TopNav 
+        &lt;div className="app">
+                &lt;TopNav 
                     loadMessages={loadMessages}
                     loadContacts={loadContacts}
                     username={username}
                     isDarkMode={isDarkMode}
                 />
-                <AddContactModal
+                &lt;AddContactModal
                     isOpen={isAddContactOpen}
                     onRequestClose={closeAddContact}
                     addContact={addContact}
                     isDarkMode={isDarkMode}
                 /> 
-            <div className ="content">
-                <SideNav
+            &lt;div className ="content">
+                &lt;SideNav
                     blockchatLogin={blockchatLogin}
                     walletAddress={myWalletAddress}
                     openSettings={openSettings}
                     isDarkMode={isDarkMode}
                 />
-                <SettingsModal
+                &lt;SettingsModal
                     isOpen={isSettingsOpen}
                     onRequestClose={closeSettings}
                     changeUsername={changeUsername}
@@ -463,14 +462,14 @@ function App() {
                     activateLightMode={activateLightMode}
                     isDarkMode={isDarkMode}
                 />
-                <ContactCardContainer
+                &lt;ContactCardContainer
                     contacts={contacts}
                     activeChat={activeChat}
                     selectChat={selectChat}
                     openAddContact = {openAddContact}
                     isDarkMode={isDarkMode}
                 />
-                <MessageContainer 
+                &lt;MessageContainer 
                     messages = {currentMessages}
                     username = {activeChat.username}
                     myAddress = {myWalletAddress}
@@ -482,7 +481,7 @@ function App() {
                     openSendETH = {openSendETH}
                     isDarkMode={isDarkMode}
                 />
-                <SendETHModal
+                &lt;SendETHModal
                     isOpen={isSendETHOpen}
                     onRequestClose={closeSendETH}
                     sendETH={sendETH}
@@ -490,9 +489,31 @@ function App() {
                     theirWalletAddress={activeChat.walletAddress}
                     isDarkMode={isDarkMode}
                 />
-            </div>
-        </div>
+            &lt;/div>
+        &lt;/div>
     );
 }
 
-export default App;
+export default App;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Apr 17 2024 22:21:07 GMT+0100 (British Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
