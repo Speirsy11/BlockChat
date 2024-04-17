@@ -126,7 +126,9 @@ contract MessagingContract {
     //Adds the given address as a contact under the name {USERNAME}.
     function addContact(address walletAddress) public returns (bool){
         bool isContactBool = isContact(walletAddress);
+        bool isUserBool = isUser(walletAddress);
         require(isContactBool == false, "This user is already in your contacts.");
+        require(isUserBool == true, "This user doesn't have an account.");
 
         user memory otherUser = registeredUsers[walletAddress];
 

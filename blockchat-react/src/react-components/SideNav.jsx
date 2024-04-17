@@ -8,8 +8,16 @@ import { Tooltip } from "react-tooltip";
 
 
 function SideNav(properties) {
+
+    const bgColour = properties.isDarkMode ? "#000000" : "#ffffff"
+    const txtColour = properties.isDarkMode ? "#000000" : "#ffffff"
+    const frameColour = properties.isDarkMode ? "#bdbdbd" : "#444444"
+
     return (
-        <div className="sidenav">
+        <div
+            className="sidenav"
+            style={{backgroundColor: frameColour}}
+        >
             <div className="bottom">
                 <button 
                     onClick={() => properties.openSettings()}
@@ -18,6 +26,7 @@ function SideNav(properties) {
                         <FontAwesomeIcon
                             icon={faCog}
                             size="2x"
+                            style={{color: txtColour}}
                         />
                 </button>
                 <Tooltip id="settings-tooltip" />

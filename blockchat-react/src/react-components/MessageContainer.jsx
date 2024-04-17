@@ -5,11 +5,19 @@ import MessageCard from './MessageCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import ethereumLogo from "./ethereumlogo.png"
+import invertedEthereumLogo from "./invertedethereumlogo.png"
 import { Tooltip } from 'react-tooltip';
 
 function MessageContainer (properties) {
     
     const [inputContent, setInputContent] = useState("");
+
+    const bgColour = properties.isDarkMode ? "#000000" : "#ffffff"
+    const txtColour = properties.isDarkMode ? "#ffffff" : "#000000"
+    const frameColour = properties.isDarkMode ? "3px solid #bdbdbd" : "3px solid #444444"
+
+    const theirColour = properties.isDarkMode ? "#117010" : "#90EE90"
+    const myColour = properties.isDarkMode ? "#104170" : "#ADD8E6"
 
     const handleInputChange = (event) => {
         setInputContent(event.target.value);
@@ -22,11 +30,18 @@ function MessageContainer (properties) {
         notFirstTime = true;
     }
 
-    const border = notFirstTime ? "3px solid #444444" : 0
+    let border = notFirstTime ? "first" : "not"
+    if(border === "first") {
+        border = frameColour
+    } else {
+        border = null
+    }
 
     return (
         <div className = "messages-container">
-            <div className="messages-header">
+            <div
+            className="messages-header"
+            style={{backgroundColor: bgColour, color: txtColour, borderBottom: frameColour}}>
                 <div className="title">
                     <h2>{properties.username ? properties.username : "Messages"}</h2>
                 </div>
@@ -36,7 +51,7 @@ function MessageContainer (properties) {
                         data-tooltip-id="send-eth-tooltip"
                         data-tooltip-content={"Send ETH to contact"}>
                         <img
-                            src = {ethereumLogo}
+                            src = {properties.isDarkMode ? invertedEthereumLogo : ethereumLogo}
                             alt="Ethereum Logo"
                             className="ethereum-logo"
                         />
@@ -44,7 +59,9 @@ function MessageContainer (properties) {
                     {notFirstTime ? <Tooltip id="send-eth-tooltip"/> : null}
                 </div>
             </div>
-            <div className="messages-list-container">
+            <div
+                className="messages-list-container"
+                style={{backgroundColor: bgColour, color: txtColour}}>
                 <div className="messages-list"> {
                     properties.messages ? (
                     properties.messages.map((message, index) => {
@@ -53,11 +70,11 @@ function MessageContainer (properties) {
 
                         if(amISender(message, properties)) {
                             sender = "You";
-                            colour = "#ADD8E6"
+                            colour = myColour
                             side = "right"
                         } else {
                             sender = properties.username;
-                            colour = "#90EE90"
+                            colour = theirColour
                             side = "left"
                         }
 
@@ -71,12 +88,12 @@ function MessageContainer (properties) {
                             colour = {colour}
                             side = {side}
                         />
-                    )})) : (<p>You have no previous messages.</p>)}
+                    )})) : (<p>Select a contact to chat with.</p>)}
                 </div>
             </div>
             <div
                 className="input-container"
-                style={{borderTop: border}}>
+                style={{borderTop: border, backgroundColor: bgColour}}>
                 {notFirstTime ? <input
                     type="text"
                     placeholder="Type your message here..."
@@ -90,7 +107,7 @@ function MessageContainer (properties) {
                         }}
                     data-tooltip-id="send-message-tooltip"
                     data-tooltip-content={"Send Message"}>
-                    <FontAwesomeIcon icon={faPaperPlane} style={{color: "#444444", width: "20px", height: "auto"}}/>
+                    <FontAwesomeIcon icon={faPaperPlane} style={{color: txtColour, width: "20px", height: "auto"}}/>
                 </button> : null}
                 {notFirstTime ? <Tooltip id="send-message-tooltip"/> : null}
             </div>

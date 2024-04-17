@@ -9,6 +9,7 @@ function AddContactModal(properties) {
     function submitDetails() {
         if(walletInput !== "") {
             properties.addContact(walletInput);
+            properties.onRequestClose();
         }
         else {
             alert("Please enter valid information.");

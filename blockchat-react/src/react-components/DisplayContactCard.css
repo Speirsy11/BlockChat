@@ -5,15 +5,9 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 3px solid #444444; /* Add top border */
-  }
-  
-  .contact-card:hover {
-    background-color: #f0f0f0;
   }
   
   .selected {
-    background-color: #e2e2e2;
     font-weight: bold;
   }
 

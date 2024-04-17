@@ -231,6 +231,14 @@ function App() {
         setSendETHOpen(false);
     }
 
+    function activateDarkMode() {
+        setDarkMode(true);
+    }
+
+    function activateLightMode() {
+        setDarkMode(false);
+    }
+
     function sendETH(myWalletAddress, theirWalletAddress, ethValue) {
         const web3 = new Web3(window.ethereum);
         const weiValue = web3.utils.toWei(ethValue, 'ether');
@@ -373,28 +381,36 @@ function App() {
                     loadMessages={loadMessages}
                     loadContacts={loadContacts}
                     username={username}
+                    isDarkMode={isDarkMode}
                 />
                 <AddContactModal
                     isOpen={isAddContactOpen}
                     onRequestClose={closeAddContact}
                     addContact={addContact}
-                />                
+                    isDarkMode={isDarkMode}
+                /> 
             <div className ="content">
                 <SideNav
                     blockchatLogin={blockchatLogin}
                     walletAddress={myWalletAddress}
                     openSettings={openSettings}
+                    isDarkMode={isDarkMode}
                 />
                 <SettingsModal
                     isOpen={isSettingsOpen}
                     onRequestClose={closeSettings}
                     changeUsername={changeUsername}
+                    activateDarkMode={activateDarkMode}
+                    activateLightMode={activateLightMode}
+                    isDarkMode={isDarkMode}
                 />
                 <ContactCardContainer
                     contacts={contacts}
                     activeChat={activeChat}
                     selectChat={selectChat}
                     openAddContact = {openAddContact}
+                    onRequestClose = {closeAddContact}
+                    isDarkMode={isDarkMode}
                 />
                 <MessageContainer 
                     messages = {currentMessages}
@@ -406,6 +422,7 @@ function App() {
                     sendMessage = {sendMessage}
                     sendETH = {sendETH}
                     openSendETH = {openSendETH}
+                    isDarkMode={isDarkMode}
                 />
                 <SendETHModal
                     isOpen={isSendETHOpen}
@@ -413,6 +430,7 @@ function App() {
                     sendETH={sendETH}
                     myWalletAddress={myWalletAddress}
                     theirWalletAddress={activeChat.walletAddress}
+                    isDarkMode={isDarkMode}
                 />
             </div>
         </div>

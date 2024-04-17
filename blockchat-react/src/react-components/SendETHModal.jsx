@@ -26,9 +26,9 @@ function SendETHModal(properties) {
                 onRequestClose={properties.onRequestClose}
                 contentLabel="Send ETH"
                 className={"modal-container"}
-            style={{content: {
-                padding: modalPadding
-            }}}
+                style={{content: {
+                    padding: modalPadding
+                }}}
             >
                 <div
                     className="send-eth-header"

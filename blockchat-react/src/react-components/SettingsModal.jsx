@@ -4,8 +4,6 @@ import "./SettingsModal.css";
 
 function SettingsModal(properties) {
 
-    const [isDarkMode, setDarkMode] = useState(properties.isDarkMode);
-    const [changingUsername, setChangingUsername] = useState(false);
     const [userInput, setUserInput] = useState("");
     const [modal, setModal] = useState(0);
 
@@ -42,12 +40,19 @@ function SettingsModal(properties) {
                 >
                     Change Username
                 </button>
+                {properties.isDarkMode ? 
                 <button
-                    onClick={() => {}}
+                    onClick={() => {properties.activateLightMode()}}
+                    style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
+                >
+                    Enter Light Mode
+                </button> :
+                <button
+                    onClick={() => {properties.activateDarkMode()}}
                     style={{color: 'black', border: "1px solid black", borderRadius:"15px"}}
                 >
                     Enter Dark Mode
-                </button>
+                </button>}
             </div>
         </Modal>);
 

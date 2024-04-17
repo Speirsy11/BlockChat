@@ -2,9 +2,6 @@
     flex-direction: column;
     flex: 1;
     overflow-y: auto;
-    border-right: 3px solid #444444; /* Add right border */
-    border-left: 3px solid #444444; /* Add left border */
-    border-top: 1px solid #ccc; /* Add top border */
     height: 100vh;
 }
 
@@ -15,7 +12,6 @@
     align-items: center;
     display: flex;
     flex-direction: row;
-    border-bottom: 3px solid #444444;
   }
 
   .contact-header h2 {
@@ -24,8 +20,6 @@
   }
 
   .contact-header button {
-    color: white;
-    border:#444444;
     border-radius: 5px;
     cursor: pointer;
     flex: 1;
