@@ -8,90 +8,88 @@ import nacl from "tweetnacl";
 import naclUtil from 'tweetnacl-util';
 import './App.css';
 
+/**
+ * @type {string}
+ * @description The BlockChat smart contract address.
+ */
+const CONTRACT_ADDRESS = "0x66f352c6F664535b9f3ED01a9391d712858ECeCa";
+
+/**
+ * @component
+ * @description Main component representing the application.
+ */
 function App() {
 
     /** 
-     * The BlockChat smart contract address.
-     * @type {string}
+     * @description The BlockChat smart contract.
      */
-    const CONTRACT_ADDRESS = "0x66f352c6F664535b9f3ED01a9391d712858ECeCa"
-
-    /** 
-     * The BlockChat smart contract.
-     * @type {ethers.Contract}
-     */
-    const [contract, setContract] = useState(null);
+    const [contract, setContract] = useState(/** @type {contract} */(null));
 
     /**
-     * The user's username.
-     * @type {string | null}
+     * @type {string}
+     * @description The user's username.
      */
     const [username, setUsername] = useState(null);
 
     /**
-     * A list of the user's contacts.
      * @type {Array | null}
+     * @description A list of the user's contacts.
      */
     const [contacts, setContacts] = useState(null);
 
     /**
-     * The user's wallet address.
      * @type {string | null}
+     * @description The user's wallet address.
      */
     const [myWalletAddress, setMyWalletAddress] = useState(null);
 
     /**
-     * The contact information of whatever chat is selected.
      * @type {{ username: string | null, walletAddress: string | null, publicEncKey: string | null}}
+     * @description The contact information of whatever chat is selected.
      */
-    const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null , publicEncKey: null});
+    const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null, publicEncKey: null });
 
     /**
-     * A list of the messages between the user and the selected contact.
      * @type {Array | null}
+     * @description A list of the messages between the user and the selected contact.
      */
     const [currentMessages, setCurrentMessages] = useState(null);
 
     /**
-     * A boolean representing whether the addContact modal is open or not.
-     * @type {bool | false}
+     * @type {boolean | false}
+     * @description A boolean representing whether the addContact modal is open or not.
      */
     const [isAddContactOpen, setAddContactOpen] = useState(false);
 
     /**
-     * A boolean representing whether the settings modal is open or not.
-     * @type {bool | false}
+     * @type {boolean | false}
+     * @description A boolean representing whether the settings modal is open or not.
      */
     const [isSettingsOpen, setSettingsOpen] = useState(false);
 
     /**
-     * A boolean representing whether the sending ETH modal is open or not.
-     * @type {bool | false}
+     * @type {boolean | false}
+     * @description A boolean representing whether the sending ETH modal is open or not.
      */
     const [isSendETHOpen, setSendETHOpen] = useState(false);
 
     /**
-     * A boolean representing whether the dark mode is enabled or not.
-     * @type {bool | false}
+     * @type {boolean | false}
+     * @description A boolean representing whether the dark mode is enabled or not.
      */
     const [isDarkMode, setDarkMode] = useState(false);
 
     /**
-     * The user's secret key.
      * @type {Uint8Array | null}
+     * @description The user's secret key.
      */
     const [secretKey, setSecretKey] = useState(null);
-    
-    //=====================================================================================================
-    //Functions
 
     /**
-     * Connects to user's MetaMask wallet to identify them.
-     * @return {string | bool} Wallet Address | false
+     * @description Opens a window to sign-in to MetaMask. This is a promise that will either succeed, and follow the then branch, or fail, and follow the catch branch. 
+     * @returns {Promise<string | boolean>} A Promise resolving to the wallet address (string) or false (boolean).
      */
     async function connectToWallet() {
-        //Opens a window to sign-in to MetaMask. This is a promise that will either succeed, and follow the
-        //then branch, or fail, and follow the catch branch. 
         try {
 
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -101,14 +99,17 @@ function App() {
             setMyWalletAddress(walletAddress);
             return walletAddress;
 
-        } catch(error) {
+        } catch (error) {
 
             return false;
         }
     }
 
-    //If the user has connected their MetaMask wallet, tries to login to the associated BlockChat account. If one does
-    //not exist, the user is prompted to create one.
+    /**
+     * @description If the user's wallet is connected, an attempt to login to BlockChat is made. They either sign in to an account, create a new account or fail and are alerted that they have not logged in.
+     * Based on this result, a user is assigned a secretKey if they do not have one. It is then saved to the indexedDB.
+     * @returns {void}
+     */
     async function blockchatLogin() {
 
         try {
@@ -117,19 +118,19 @@ function App() {
 
             //In JS, variables that have value are considered Truthy so this is entered if an address is found.
             if (walletAddress) {
-    
+
                 const provider = new Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
                 const tmpContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
                 setContract(tmpContract);
-    
+
                 let username;
                 const isUser = await tmpContract.isUser(walletAddress);
-    
+
                 if (isUser) {
                     let tmpSecretKey;
                     username = await tmpContract.getUser(walletAddress);
-    
+
                     const databasePromise =  new Promise((resolve, reject) => {
                         const openRequest = window.indexedDB.open("Site Storage", 1);
                 
@@ -151,22 +152,22 @@ function App() {
                     });
             
                     let secretKey = await databasePromise;
-    
+
                     setSecretKey(secretKey);
-    
+
                 } else {
-    
+
                     username = prompt("You do not have an account. Please enter a username to create one.");
-    
+
                     if (username === "") {
                         username = "newUser";
                     }
-    
+
                     let keys = nacl.box.keyPair();
-    
+
                     const databasePromise = window.indexedDB.open("Site Storage", 1);
                     databasePromise.onsuccess = function(event) {
-    
+
                         let database = event.target.result;
                         let transaction = database.transaction("KeyStorage", "readwrite");
                         let store = transaction.objectStore("KeyStorage");
@@ -175,36 +176,42 @@ function App() {
                             walletAddress: walletAddress,
                             privateKey: keys.secretKey
                         }
-    
+
                         setSecretKey(secretKey);
-    
+
                         store.put(data);
-    
+
                         transaction.oncomplete = function() {
                             database.close();
                         };
                     };
-    
+
                     await tmpContract.createUser(username, keys.publicKey);
                 }
-    
+
                 setUsername(username);
-    
+
                 alert("Connected to BlockChat account.");
-    
+
             } else {
-    
+
                 alert("Failed to login.");
-    
+
             }
 
         } catch (error) {
             console.log("ENTERED ERROR:", error);
             alert("Failed to login.");
-        }
-        
+        } 
     }
 
+    /**
+     * @param {string} username - The contact's username.
+     * @param {string} walletAddress - The contact's wallet address.
+     * @param {string} publicEncKey - The contact's public encryption key.
+     * @description This sets the activeChat hook to whichever contact is sent to it.
+     * @returns {void}
+     */
     function selectChat(username, walletAddress, publicEncKey) {
         if (publicEncKey.startsWith('0x')) {
             publicEncKey = publicEncKey.slice(2);
@@ -212,6 +219,13 @@ function App() {
         setActiveChat({username, walletAddress, publicEncKey});
     }
 
+    /**
+     * @param {string} walletAddress - The contact's wallet address.
+     * @param {string} username - The contact's username.
+     * @param {string} publicEncKey - The contact's public encryption key.
+     * @description Firstly reads in the secretKey and then uses this in combination with the input parameters and a randomly generated nonce to encrypt the message into a box. This box is then sent to be stored in the contract.
+     * @returns {void}
+     */
     async function sendMessage(walletAddress, message, publicEncKey) {
         let secretKey;
         try {
@@ -248,6 +262,11 @@ function App() {
         }
     }
 
+    /**
+     * @param {string} newUsername - The username that the user wants to switch to.
+     * @description Takes a new username and sends it to the contract to switch it for the user.
+     * @return {void}
+     */
     async function changeUsername(newUsername) {
         try {
             await contract.changeUsername(newUsername);
@@ -256,6 +275,11 @@ function App() {
         }
     }
 
+    /**
+     * @param {string} walletAddress - The contact's wallet address.
+     * @description Takes a wallet address as an input and tries to add the associated account as a contact. Alerts the user if this fails.
+     * @returns {void}
+     */
     async function addContact(walletAddress) {
         try {
             await contract.addContact(walletAddress)
@@ -265,35 +289,67 @@ function App() {
         }
     }
 
+    /**
+     * @description Opens the add contact modal by setting the react hook.
+     * @returns {void}
+     */
     function openAddContact() {
         setAddContactOpen(true);
     }
 
+    /**
+     * @description Closes the add contact modal by setting the react hook.
+     * @returns {void}
+     */
     function closeAddContact() {
         setAddContactOpen(false);
     }
 
+    /**
+     * @description Opens the settings modal by setting the react hook.
+     * @returns {void}
+     */
     function openSettings() {
         setSettingsOpen(true);
     }
 
+    /**
+     * @description Closes the settings modal by setting the react hook.
+     * @returns {void}
+     */
     function closeSettings() {
         setSettingsOpen(false);
     }
 
+    /**
+     * @description Opens the send ETH modal by setting the react hook.
+     * @returns {void}
+     */
     function openSendETH() {
         console.log("clicked2");
         setSendETHOpen(true);
     }
 
+    /**
+     * @description Closes the send ETH modal by setting the react hook.
+     * @returns {void}
+     */
     function closeSendETH() {
         setSendETHOpen(false);
     }
 
+    /**
+     * @description Activates dark mode by setting the react hook.
+     * @returns {void}
+     */
     function activateDarkMode() {
         setDarkMode(true);
     }
 
+    /**
+     * @description Deactivates dark mode by setting the react hook.
+     * @returns {void}
+     */
     function activateLightMode() {
         setDarkMode(false);
     }

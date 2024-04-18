@@ -36,61 +36,88 @@ import nacl from "tweetnacl";
 import naclUtil from 'tweetnacl-util';
 import './App.css';
 
+/**
+ * @type {string}
+ * @description The BlockChat smart contract address.
+ */
+const CONTRACT_ADDRESS = "0x66f352c6F664535b9f3ED01a9391d712858ECeCa";
+
+/**
+ * @component
+ * @description Main component representing the application.
+ */
 function App() {
 
-    //Data Structures
-    const CONTRACT_ADDRESS = "0x66f352c6F664535b9f3ED01a9391d712858ECeCa"
-    //=====================================================================================================
-    //Hooks
-    /**
-     * The BlockChat smart contract.
-     * @const {ethers.Contract}
+    /** 
+     * @description The BlockChat smart contract.
      */
-    const [contract, setContract] = useState(null);
-    /**
-     * The user's username.
-     * @type {string | null}
-     */
-    const [username, setUsername] = useState(null);
-    /**
-     * A list of the user's contacts.
-     * @const {Array}
-     */
-    const [contacts, setContacts] = useState(null);
-        /**
-     * The user's wallet address.
-     * @const {string}
-     */
-    const [myWalletAddress, setMyWalletAddress] = useState(null);
-    /**
-     * The contact information of whatever chat is selected.
-     * @const {{ string, string, string}}
-     */
-    const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null , publicEncKey: null});
-    /**
-     * A list of the messages between the user and the selected contact.
-     * @const {Array}
-     */
-    const [currentMessages, setCurrentMessages] = useState(null);
-    /**
-     * The contact information of whatever chat is selected.
-     * @const {bool}
-     */
-    const [isAddContactOpen, setAddContactOpen] = useState(false);
-    const [isSettingsOpen, setSettingsOpen] = useState(false);
-    const [isDarkMode, setDarkMode] = useState(false);
-    const [secretKey, setSecretKey] = useState(null);
-    const [isSendETHOpen, setSendETHOpen] = useState(false);
-    //=====================================================================================================
-    //Functions
+    const [contract, setContract] = useState(/** @type {contract} */(null));
 
     /**
-     * Connects to user's MetaMask wallet to identify them.
-     * @return {string | bool} Wallet Address | false
+     * @type {string}
+     * @description The user's username.
+     */
+    const [username, setUsername] = useState(null);
+
+    /**
+     * @type {Array | null}
+     * @description A list of the user's contacts.
+     */
+    const [contacts, setContacts] = useState(null);
+
+    /**
+     * @type {string | null}
+     * @description The user's wallet address.
+     */
+    const [myWalletAddress, setMyWalletAddress] = useState(null);
+
+    /**
+     * @type {{ username: string | null, walletAddress: string | null, publicEncKey: string | null}}
+     * @description The contact information of whatever chat is selected.
+     */
+    const [activeChat, setActiveChat] = useState({ username: null, walletAddress: null, publicEncKey: null });
+
+    /**
+     * @type {Array | null}
+     * @description A list of the messages between the user and the selected contact.
+     */
+    const [currentMessages, setCurrentMessages] = useState(null);
+
+    /**
+     * @type {boolean | false}
+     * @description A boolean representing whether the addContact modal is open or not.
+     */
+    const [isAddContactOpen, setAddContactOpen] = useState(false);
+
+    /**
+     * @type {boolean | false}
+     * @description A boolean representing whether the settings modal is open or not.
+     */
+    const [isSettingsOpen, setSettingsOpen] = useState(false);
+
+    /**
+     * @type {boolean | false}
+     * @description A boolean representing whether the sending ETH modal is open or not.
+     */
+    const [isSendETHOpen, setSendETHOpen] = useState(false);
+
+    /**
+     * @type {boolean | false}
+     * @description A boolean representing whether the dark mode is enabled or not.
+     */
+    const [isDarkMode, setDarkMode] = useState(false);
+
+    /**
+     * @type {Uint8Array | null}
+     * @description The user's secret key.
+     */
+    const [secretKey, setSecretKey] = useState(null);
+
+    /**
+     * @description Opens a window to sign-in to MetaMask. This is a promise that will either succeed, and follow the then branch, or fail, and follow the catch branch. 
+     * @returns {Promise&lt;string | boolean>} A Promise resolving to the wallet address (string) or false (boolean).
      */
     async function connectToWallet() {
-        //Opens a window to sign-in to MetaMask. This is a promise that will either succeed, and follow the
-        //then branch, or fail, and follow the catch branch. 
         try {
 
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -100,14 +127,17 @@ function App() {
             setMyWalletAddress(walletAddress);
             return walletAddress;
 
-        } catch(error) {
+        } catch (error) {
 
             return false;
         }
     }
 
-    //If the user has connected their MetaMask wallet, tries to login to the associated BlockChat account. If one does
-    //not exist, the user is prompted to create one.
+    /**
+     * @description If the user's wallet is connected, an attempt to login to BlockChat is made. They either sign in to an account, create a new account or fail and are alerted that they have not logged in.
+     * Based on this result, a user is assigned a secretKey if they do not have one. It is then saved to the indexedDB.
+     * @returns {void}
+     */
     async function blockchatLogin() {
 
         try {
@@ -116,19 +146,19 @@ function App() {
 
             //In JS, variables that have value are considered Truthy so this is entered if an address is found.
             if (walletAddress) {
-    
+
                 const provider = new Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
                 const tmpContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
                 setContract(tmpContract);
-    
+
                 let username;
                 const isUser = await tmpContract.isUser(walletAddress);
-    
+
                 if (isUser) {
                     let tmpSecretKey;
                     username = await tmpContract.getUser(walletAddress);
-    
+
                     const databasePromise =  new Promise((resolve, reject) => {
                         const openRequest = window.indexedDB.open("Site Storage", 1);
                 
@@ -150,22 +180,22 @@ function App() {
                     });
             
                     let secretKey = await databasePromise;
-    
+
                     setSecretKey(secretKey);
-    
+
                 } else {
-    
+
                     username = prompt("You do not have an account. Please enter a username to create one.");
-    
+
                     if (username === "") {
                         username = "newUser";
                     }
-    
+
                     let keys = nacl.box.keyPair();
-    
+
                     const databasePromise = window.indexedDB.open("Site Storage", 1);
                     databasePromise.onsuccess = function(event) {
-    
+
                         let database = event.target.result;
                         let transaction = database.transaction("KeyStorage", "readwrite");
                         let store = transaction.objectStore("KeyStorage");
@@ -174,36 +204,42 @@ function App() {
                             walletAddress: walletAddress,
                             privateKey: keys.secretKey
                         }
-    
+
                         setSecretKey(secretKey);
-    
+
                         store.put(data);
-    
+
                         transaction.oncomplete = function() {
                             database.close();
                         };
                     };
-    
+
                     await tmpContract.createUser(username, keys.publicKey);
                 }
-    
+
                 setUsername(username);
-    
+
                 alert("Connected to BlockChat account.");
-    
+
             } else {
-    
+
                 alert("Failed to login.");
-    
+
             }
 
         } catch (error) {
             console.log("ENTERED ERROR:", error);
             alert("Failed to login.");
-        }
-        
+        } 
     }
 
+    /**
+     * @param {string} username 
+     * @param {string} walletAddress 
+     * @param {string} publicEncKey
+     * @description This sets the activeChat hook to whichever contact is sent to it.
+     * @returns {void}
+     */
     function selectChat(username, walletAddress, publicEncKey) {
         if (publicEncKey.startsWith('0x')) {
             publicEncKey = publicEncKey.slice(2);
@@ -211,6 +247,13 @@ function App() {
         setActiveChat({username, walletAddress, publicEncKey});
     }
 
+    /**
+     * @param {string} walletAddress 
+     * @param {string} message 
+     * @param {string} publicEncKey
+     * @description Firstly reads in the secretKey and then uses this in combination with the input parameters and a randomly generated nonce to encrypt the message into a box. This box is then sent to be stored in the contract.
+     * @returns {void}
+     */
     async function sendMessage(walletAddress, message, publicEncKey) {
         let secretKey;
         try {
@@ -247,6 +290,11 @@ function App() {
         }
     }
 
+    /**
+     * @param {string} newUsername
+     * @description Takes a new username and sends it to the contract to switch it for the user.
+     * @return {void}
+     */
     async function changeUsername(newUsername) {
         try {
             await contract.changeUsername(newUsername);
@@ -255,6 +303,11 @@ function App() {
         }
     }
 
+    /**
+     * @param {string} walletAddress
+     * @description Takes a wallet address as an input and tries to add the associated account as a contact. Alerts the user if this fails.
+     * @returns {void}
+     */
     async function addContact(walletAddress) {
         try {
             await contract.addContact(walletAddress)
@@ -504,13 +557,13 @@ export default App;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CONTRACT_ADDRESS">CONTRACT_ADDRESS</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Apr 17 2024 22:21:07 GMT+0100 (British Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Apr 18 2024 12:49:25 GMT+0100 (British Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>
