@@ -1,3 +1,7 @@
+/**
+ * Handles all of the exporting of the components to App,jsx.
+ */
+
 export { default as SideNav } from "./SideNav";
 export { default as TopNav } from "./TopNav";
 export { default as MessageCard } from "./MessageCard";

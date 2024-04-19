@@ -6,12 +6,18 @@ import metamaskGrey from "./metamaskgrey.png"
 import metamaskOrange from "./metamaskorange.png"
 import { Tooltip } from "react-tooltip";
 
-
+/**
+ * @component
+ * @param {*} properties 
+ * @description Child component representing the side navigation bar.
+ */
 function SideNav(properties) {
 
-    const bgColour = properties.isDarkMode ? "#000000" : "#ffffff"
-    const txtColour = properties.isDarkMode ? "#000000" : "#ffffff"
-    const frameColour = properties.isDarkMode ? "#bdbdbd" : "#444444"
+    /**
+     * @description These are colour inversions to enable dark mode if the user has chosen that.
+    */
+    const txtColour = properties.isDarkMode ? "#000000" : "#ffffff";
+    const frameColour = properties.isDarkMode ? "#bdbdbd" : "#444444";
 
     return (
         <div
@@ -36,6 +42,11 @@ function SideNav(properties) {
     );
 }
 
+/**
+ * @param {*} properties 
+ * @description This function checks if the user is connected to the site through MetaMask. If they are, it returns an orange MetaMask logo whereas it is returned as greyed out if they are not.
+ * @returns {React Button}
+ */
 function greyOrOrange(properties) {
     if (properties.walletAddress) {
         return(
@@ -75,6 +86,10 @@ function greyOrOrange(properties) {
     }
 }
 
+/**
+ * @description Alerts the user that their wallet is already connected.
+ * @returns {void}
+ */
 function alreadyConnected() {
     alert("MetaMask is already connected.");
 }

@@ -1,10 +1,17 @@
 import React from "react";
 import './MessageCard.css';
 
+/**
+ * @component
+ * @param {*} properties 
+ * @description Child component displaying the actual message content.
+ */
 function MessageCard(properties) {
 
-  console.log(properties.side)
-
+    /**
+    * @type {Object}
+    * @description Styling to be applied to each message based on who sent it.
+    */
     const messageStyling = {
       background: properties.colour,
       float: properties.side
@@ -24,6 +31,11 @@ function MessageCard(properties) {
     );
   }
 
+/**
+ * @param {int} timestamp
+ * @description This function takes a Unix timestamp and converts it into a human readable date/time.
+ * @returns {string}
+ */
 function timestampConversion(timestamp) {
   const dateObj = new Date(Number(timestamp) * 1000);
   let hours = String(dateObj.getHours());
@@ -32,7 +44,6 @@ function timestampConversion(timestamp) {
   let month = String(dateObj.getMonth() + 1);
   let year = String(dateObj.getFullYear());
   year = year.slice(-2)
-  console.log(day, month, year)
 
   if (hours.length === 1) {
     hours = "0"+hours;
@@ -41,7 +52,6 @@ function timestampConversion(timestamp) {
     minutes = "0"+minutes;
   }
   const new_timestamp = (day+"/"+month+"/"+year+" - "+hours+":"+minutes);
-  console.log(new_timestamp)
   return new_timestamp;
 }
 

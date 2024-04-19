@@ -181,7 +181,7 @@ export const abi = [
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "contactwalletAddress",
+				"name": "contactWalletAddress",
 				"type": "address"
 			}
 		],
