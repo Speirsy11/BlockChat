@@ -354,6 +354,13 @@ function App() {
         setDarkMode(false);
     }
 
+    /**
+     * @param {string} myWalletAddress - The user's wallet address.
+     * @param {string} theirWalletAddress - The contact's wallet address.
+     * @param {int} ethValue - The amount of ETH wanting to be sent.
+     * @description Sends the specified amount of ETH from the user's wallet to the contact's.
+     * @returns {void}
+     */
     function sendETH(myWalletAddress, theirWalletAddress, ethValue) {
         const web3 = new Web3(window.ethereum);
         const weiValue = web3.utils.toWei(ethValue, 'ether');
@@ -374,6 +381,10 @@ function App() {
         });
     }
 
+    /**
+     * @description Updates the webapp with who is connected whenever an account is switched. This also handles disconnection from the webapp by setting the react hook.
+     * @returns {void}
+     */
     async function handleAccountChanged() {
         const web3 = new Web3(window.ethereum);
         const accounts = await web3.eth.getAccounts();
@@ -385,7 +396,12 @@ function App() {
             setMyWalletAddress(tmpWalletAddress);
         }
     }
-
+ 
+    /**
+     * @description Attempts to read the messages between the user and the selected contact. If successful, the messages are decrypted and turned into message objects for the program. These message objects are stored
+     * as the current messages through the react hook.
+     * @returns {void}
+     */
     async function loadMessages() {
 
         let tmpMessages = [];
@@ -424,6 +440,10 @@ function App() {
 
     }
 
+    /**
+     * @description Attempts to read the user's contacts from the smart contract. If successful, these are wrapped into contact objects wthin the program. These are then stored as contacts through the react hook.
+     * @returns {void}
+     */
     async function loadContacts() {
 
         let tmpContacts = [];
@@ -444,15 +464,23 @@ function App() {
             if (tmpContacts.length === 0) {
                 tmpContacts = null;
             }
-        } catch {
-            //Do Nothing
+        } catch (error) {
+            console.log("ENTERED ERROR:", error);
         }
 
         setContacts(tmpContacts);
     }
 
+    /**
+     * @description useEffect that is triggered when the app is launched.
+     * @returns {void}
+     */
     useEffect(() => {
 
+        /**
+         * @description This only runs when the app is first opened. It checks that the user's browser is compatible with the technolgies used in the webapp. It also creates a database for scretKey storage if one does not exist.
+         * @returns {void}
+         */
         async function initialSetup() {
             if(window.ethereum) {
                 window.ethereum.on('accountsChanged', handleAccountChanged);
@@ -490,6 +518,7 @@ function App() {
 
     }, [activeChat]);
 
+    
     return (
         <div className="app">
                 <TopNav 
