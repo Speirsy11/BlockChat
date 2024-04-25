@@ -3,16 +3,22 @@
 pragma solidity >=0.8.2 < 0.9.0;
 
 /**
-*@title Messaging Contract
-*@dev Facilitating messaging, and the associated actions, between users.
-*/
+ * @title Messaging Contract
+ * @dev Facilitating messaging, and the associated actions, between users.
+ */
 contract MessagingContract {
-    //Values
-    //Hash Modifiyng Nonce
-    uint256 constant private nonce = 8742963158;
+
     //=====================================================================================================
-    //Structures
-    //Stores information relating to the current user.
+    //Data Structures
+
+    /**
+     * @dev This is a randomly generated value that modifies the hash code created between two users.
+     */
+    uint256 constant private value = 8742963158;
+
+    /**
+     * @dev Stores information relating to the current user.
+     */
     struct user {
         string username;
         address walletAddress;
@@ -20,30 +26,43 @@ contract MessagingContract {
         contact[] contacts;
     }
 
-    //Stores information relating to a user's contact.
+    /**
+     * @dev Stores information relating to a user's contact.
+     */
     struct contact {
         string username;
         address walletAddress;
         bytes32 publicEncKey;
     }
 
-    //Stores information relating to an individual message.
+    /**
+     * @dev Stores information relating to an individual message.
+     */
     struct message {
         address sender;
         uint256 timestamp;
         bytes content;
         bytes24 nonce;
     }
-    //=====================================================================================================
-    //Mappings
-    //Mapping containing all messages within the contract.
+
+    /**
+     * @dev Mapping containing all messages within the contract.
+     */
     mapping(bytes32 => message[]) allMessages;
 
-    //Mapping containing all of the application's registered users.
+    /**
+     * @dev Mapping containing all of the application's registered users.
+     */
     mapping(address => user) registeredUsers;
+
     //=====================================================================================================
     //Functions
-    //User Managing Functions
+
+    /**
+     * @param walletAddress The address of an ETH wallet.
+     * @dev Takes an address and checks if it is associated with a BlockChat account.
+     * @return boolean true if account exists, false if not.
+     */
     function isUser(address walletAddress) public view returns(bool) {
         if (keccak256(bytes(registeredUsers[walletAddress].username)) == keccak256(bytes('')))  {
             return false;
@@ -53,6 +72,11 @@ contract MessagingContract {
         }
     }
 
+    /**
+     * @param walletAddress The address of an ETH wallet.
+     * @dev Takes an address and returns the associated BlockChat account if one exists.
+     * @return user User associated with the wallet address.
+     */
     function getUser(address walletAddress) external view returns(string memory){
         bool isUserBool = isUser(walletAddress);
         require (isUserBool == true, "This user does not exist.");
@@ -60,7 +84,11 @@ contract MessagingContract {
         return (registeredUsers[walletAddress].username);
     }
 
-    //Checks if a given name is just empty string.
+    /**
+     * @param username A string containing a potential username.
+     * @dev Checks if a given name is just an empty string.
+     * @return boolean true if string is empty, false if not.
+     */
     function emptyName(string calldata username) internal pure returns(bool) {
         if (keccak256(bytes(username)) == keccak256(bytes('')))  {
             return true;
@@ -70,7 +98,11 @@ contract MessagingContract {
         }
     }
 
-    //Creates a new entry in registeredUsers based on the user's public key and assigns a name.
+    /**
+     * @param username A string containing a potential username.
+     * @param publicEncKey A bytes32 array containing a public encryption key.
+     * @dev Creates a new entry in registeredUsers based on the user's public key, wallet address and a given username.
+     */
     function createUser(string calldata username, bytes32 publicEncKey) public {
         bool isUserBool = isUser(msg.sender);
         bool isEmptyBool = emptyName(username);
@@ -82,34 +114,37 @@ contract MessagingContract {
         registeredUsers[msg.sender].publicEncKey = publicEncKey;
     }
 
+    /**
+     * @dev As long as a user has an account, it is then deleted.
+     * @notice This is only for development purposes, not a feature.
+     */
     function removeUser() public {
         bool isUserBool = isUser(msg.sender);
         require(isUserBool == true, "This user does not have an account.");
-        //Sets the currentUser into a variable.
+
         user storage currentUser = registeredUsers[msg.sender];
-        // Iterate through the contacts array and remove each element
+
         for (uint256 i = 0; i < currentUser.contacts.length; i++) {
             delete currentUser.contacts[i];
         }
-        // Set the user's data to default values
+
         currentUser.username = "";
         currentUser.walletAddress = address(0);
     }
 
-        function convertToBytes24(bytes memory data) internal pure returns(bytes24) {
-        
-        bytes24 converted = abi.decode(data, (bytes24));
-
-        return converted;
-
-    }
-
+    /**
+     * @param newUsername A string containing a new username.
+     * @dev Find the account associated with the transaction sender's address and change the username.
+     */
     function changeUsername(string calldata newUsername) public {
         registeredUsers[msg.sender].username = newUsername;
     }
 
-    //Contact Managing Functions
-    //Checks if the given address correpsonds to a user's contacts and returns true if so, false if not.
+    /**
+     * @param contactwalletAddress An ETH wallet address.
+     * @dev Checks through the user's contacts and finds out if any of them match the given address.
+     * @return boolean true if the address is a contact, false if not.
+     */
     function isContact(address contactwalletAddress) public view returns (bool) {
         for (uint i = 0; i < registeredUsers[msg.sender].contacts.length; i++) {
             if (registeredUsers[msg.sender].contacts[i].walletAddress == contactwalletAddress) {
@@ -119,11 +154,19 @@ contract MessagingContract {
         return false;
     }
 
+    /**
+     * @dev Retrieves the user's full list of contacts.
+     * @return contact[] A list of the user's contacts.
+     */
     function getContacts() public view returns (contact[] memory){
         return registeredUsers[msg.sender].contacts;
     }
 
-    //Adds the given address as a contact under the name {USERNAME}.
+    /**
+     * @param walletAddress An ETH wallet address.
+     * @dev As long as the given address has an account and isn't already in the user's contacts, the address is added to contacts.
+     * @return boolean true if contact successfully added, false if not.
+     */
     function addContact(address walletAddress) public returns (bool){
         bool isContactBool = isContact(walletAddress);
         bool isUserBool = isUser(walletAddress);
@@ -141,16 +184,20 @@ contract MessagingContract {
         }
     }
 
-    //Removes the given contact from the user's contacts.
-    function removeContact(address contactwalletAddress) public {
-        bool isContactBool = isContact(contactwalletAddress);
+    /**
+     * @param contactWalletAddress An ETH wallet address.
+     * @dev As long as the given address is already in the user's contacts, the address is removed from contacts.
+     * @notice This is only for development purposes, not a feature.
+     */
+    function removeContact(address contactWalletAddress) public {
+        bool isContactBool = isContact(contactWalletAddress);
         require(isContactBool == true, "This user is not in your contacts.");
         
         user memory currentUser = registeredUsers[msg.sender];
 
         for (uint i = 0; i < registeredUsers[msg.sender].contacts.length; i++) {
             contact memory currentContact = currentUser.contacts[i];
-            if (currentContact.walletAddress == contactwalletAddress) {
+            if (currentContact.walletAddress == contactWalletAddress) {
                 registeredUsers[msg.sender].contacts[i] = currentUser.contacts[currentUser.contacts.length - 1];
                 registeredUsers[msg.sender].contacts.pop();
                 return;
@@ -158,9 +205,13 @@ contract MessagingContract {
         }
     }
 
-    //Messaging Managing Functions
-
-    //Creates a new message structure with the needed info and then send it to the given address.
+    /**
+     * @param walletAddress An ETH wallet address.
+     * @param content The encrypted message content.
+     * @param messageNonce Randomly generated number-used-once tied to the message's encryption/decryption.
+     * @dev The wallet address is used to create a hash code to identify the chat, whilst the other information is wrapped into a message object which is stored in the allMessages mapping, only retrievable with the hash code.
+     * @dev This also contains logic to update a user's contacts. This handles the displaying of usernames that have been modified. It was placed here to save on gas fees.
+     */
     function sendMessage(address walletAddress, bytes calldata content, bytes24 messageNonce) external {
         bool userExistsBool = isUser(msg.sender);
         bool contactExistsBool = isUser(walletAddress);
@@ -180,7 +231,7 @@ contract MessagingContract {
         for (uint j = 0; j < tmpContacts.length; j++) {
             registeredUsers[msg.sender].contacts[j] = tmpContacts[j];
         }
-
+        //
 
         bytes32 uniqueHash = createHashCode(walletAddress);
         message memory newMessage = message(msg.sender, block.timestamp, content, messageNonce);
@@ -188,16 +239,24 @@ contract MessagingContract {
         allMessages[uniqueHash].push(newMessage);
     }
 
-    //Reads the message history between the user and the given address, and returns it.
+    /**
+     * @param walletAddress An ETH wallet address.
+     * @dev Generates a hash code to identify where to read the messages from. Then returns the messages.
+     * @return message[] A list of messages between the user and contact.
+     */
     function receiveMessage(address walletAddress) external view returns (message[] memory) {
         bytes32 uniqueHash = createHashCode(walletAddress);
         return allMessages[uniqueHash];
     }
 
-    //Creates unique hash based on the conversation participants and a 3rd random variable to identify which messages are which.
+    /**
+     * @param walletAddress An ETH wallet address.
+     * @dev Creates unique hash based using the keccak256 hash. This is created using the conversation participants and a 3rd random variable to create a code. This code is then ordered to account for the different order the addresses will be called with depending on who calls it.
+     * @return bytes32 A hash code identifying chat messages within the contract.
+     */
     function createHashCode(address walletAddress) internal view returns (bytes32) {
-        bytes32 hash1 = keccak256(abi.encodePacked(msg.sender, walletAddress, nonce));
-        bytes32 hash2 = keccak256(abi.encodePacked(walletAddress, msg.sender, nonce));
+        bytes32 hash1 = keccak256(abi.encodePacked(msg.sender, walletAddress, value));
+        bytes32 hash2 = keccak256(abi.encodePacked(walletAddress, msg.sender, value));
         return (hash1 < hash2 ? hash1 : hash2);
     }
 }

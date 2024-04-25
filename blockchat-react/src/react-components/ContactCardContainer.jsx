@@ -5,9 +5,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Tooltip } from 'react-tooltip';
 
-
+/**
+ * @component
+ * @param {*} properties 
+ * @description Child component representing the contacts portion of the site.
+ */
 function ContactCardContainer (properties) {
 
+    /**
+     * @description These are colour inversions to enable dark mode if the user has chosen that.
+     */    
     const bgColour = properties.isDarkMode ? "#000000" : "#ffffff"
     const txtColour = properties.isDarkMode ? "#ffffff" : "#000000"
     const frameColour = properties.isDarkMode ? "3px solid #bdbdbd" : "3px solid #444444"
@@ -16,11 +23,11 @@ function ContactCardContainer (properties) {
         <div
             className="contact-container"
             style={{backgroundColor: bgColour, color: txtColour, borderRight: frameColour}}
-            >
+        >
             <div
                 className="contact-header"
                 style={{borderBottom: frameColour}}
-                >
+            >
                     <h2>Contacts</h2>
                     <button
                         onClick={() => {properties.openAddContact()}}

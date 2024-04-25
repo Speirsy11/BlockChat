@@ -12,7 +12,7 @@ import './App.css';
  * @type {string}
  * @description The BlockChat smart contract address.
  */
-const CONTRACT_ADDRESS = "0x66f352c6F664535b9f3ED01a9391d712858ECeCa";
+const CONTRACT_ADDRESS = "0xE961bf4AAECca5904a887c45301e5E46f1F05eF9";
 
 /**
  * @component
@@ -21,12 +21,13 @@ const CONTRACT_ADDRESS = "0x66f352c6F664535b9f3ED01a9391d712858ECeCa";
 function App() {
 
     /** 
+     * @type {ethers.Contract | null}
      * @description The BlockChat smart contract.
      */
-    const [contract, setContract] = useState(/** @type {contract} */(null));
+    const [contract, setContract] = useState(null);
 
     /**
-     * @type {string}
+     * @type {string | null}
      * @description The user's username.
      */
     const [username, setUsername] = useState(null);
@@ -155,6 +156,8 @@ function App() {
 
                     setSecretKey(secretKey);
 
+                    alert("Connected to BlockChat account.");
+
                 } else {
 
                     username = prompt("You do not have an account. Please enter a username to create one.");
@@ -187,11 +190,10 @@ function App() {
                     };
 
                     await tmpContract.createUser(username, keys.publicKey);
+
                 }
 
                 setUsername(username);
-
-                alert("Connected to BlockChat account.");
 
             } else {
 
@@ -272,6 +274,7 @@ function App() {
             await contract.changeUsername(newUsername);
         } catch (error) {
             console.log("ENTERED ERROR:", error);
+            alert("Please login to BlockChat before doing this.")
         }
     }
 
@@ -281,12 +284,18 @@ function App() {
      * @returns {void}
      */
     async function addContact(walletAddress) {
-        try {
-            await contract.addContact(walletAddress)
-        } catch (error) {
-            alert("This is not a valid address, please try again.")
-            console.log("ENTERED ERROR:", error);
+
+        if (username) {
+            try {
+                await contract.addContact(walletAddress)
+            } catch (error) {
+                alert("This is not an address associated with BlockChat, please try again.")
+                console.log("ENTERED ERROR:", error);
+            }
+        } else {
+            alert("Please login to BlockChat first.");
         }
+
     }
 
     /**
@@ -326,7 +335,6 @@ function App() {
      * @returns {void}
      */
     function openSendETH() {
-        console.log("clicked2");
         setSendETHOpen(true);
     }
 
@@ -364,7 +372,6 @@ function App() {
     function sendETH(myWalletAddress, theirWalletAddress, ethValue) {
         const web3 = new Web3(window.ethereum);
         const weiValue = web3.utils.toWei(ethValue, 'ether');
-        console.log(ethValue, weiValue);
 
         web3.eth.sendTransaction({
             from: myWalletAddress,
@@ -372,13 +379,13 @@ function App() {
             value: weiValue,
             gas: 50000
         })
-        .on("transactionHash", () => {
-            alert("ETH transferred successfully.");
-        })
-        .on('error', (error) => {
-            console.log("Transaction error:", error);
-            alert("ETH failed to send.");
-        });
+            .on("transactionHash", () => {
+                alert("ETH transferred successfully.");
+            })
+            .catch((error) => {
+                console.log("Transaction error:", error);
+                alert("You can not afford this transaction.");
+            });
     }
 
     /**
@@ -389,7 +396,10 @@ function App() {
         const web3 = new Web3(window.ethereum);
         const accounts = await web3.eth.getAccounts();
         if (accounts.length === 0) {
+
+            setUsername(null);
             setMyWalletAddress(null);
+
         }
         else {
             const tmpWalletAddress = accounts[0];
@@ -506,20 +516,12 @@ function App() {
         initialSetup();
     }, []);
 
-    /**
-     * @description useEffect that is triggered when "contract" or "myWalletAddress" changes.
-     * @returns {void}
-     */
     useEffect(() => {
 
         loadContacts();
 
     }, [myWalletAddress, contract]);
 
-    /**
-     * @description useEffect that is triggered when "activeChat" changes.
-     * @returns {void}
-     */
     useEffect(() => {
 
         loadMessages();

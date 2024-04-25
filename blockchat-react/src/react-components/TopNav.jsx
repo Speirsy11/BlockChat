@@ -7,13 +7,23 @@ import { Tooltip } from "react-tooltip";
 import blockchatLogo from "./blockchatlogo.png"
 import invertedBlockchatLogo from "./invertedblockchatlogo.png"
 
+/**
+ * @component
+ * @param {*} properties 
+ * @description Child component representing the top navigation bar.
+ */
 function TopNav(properties) {
 
-    const bgColour = properties.isDarkMode ? "#000000" : "#ffffff"
-    const txtColour = properties.isDarkMode ? "#000000" : "#ffffff"
-    const frameColour = properties.isDarkMode ? "#bdbdbd" : "#444444"
-    const logo = properties.isDarkMode ? invertedBlockchatLogo : blockchatLogo
+    /**
+     * @description These are colour inversions to enable dark mode if the user has chosen that.
+    */
+    const txtColour = properties.isDarkMode ? "#000000" : "#ffffff";
+    const frameColour = properties.isDarkMode ? "#bdbdbd" : "#444444";
+    const logo = properties.isDarkMode ? invertedBlockchatLogo : blockchatLogo;
 
+    /**
+     * @description Refreshes the information held in these arrays when the refresh button is hit.
+     */
     function refresh() {
         properties.loadMessages();
         properties.loadContacts();
