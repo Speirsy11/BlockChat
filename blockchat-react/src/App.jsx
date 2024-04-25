@@ -506,12 +506,20 @@ function App() {
         initialSetup();
     }, []);
 
+    /**
+     * @description useEffect that is triggered when "contract" or "myWalletAddress" changes.
+     * @returns {void}
+     */
     useEffect(() => {
 
         loadContacts();
 
     }, [myWalletAddress, contract]);
 
+    /**
+     * @description useEffect that is triggered when "activeChat" changes.
+     * @returns {void}
+     */
     useEffect(() => {
 
         loadMessages();
